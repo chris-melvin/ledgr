@@ -96,9 +96,17 @@ interface DashboardClientProps {
   initialBuckets?: BudgetBucket[];
   initialIncomes?: Income[];
   initialBills?: Debt[];
+  trackingMode?: "tracking_only" | "budget_enabled";
 }
 
-export function DashboardClient({ initialExpenses, dailyLimit, initialBuckets = [], initialIncomes = [], initialBills = [] }: DashboardClientProps) {
+export function DashboardClient({
+  initialExpenses,
+  dailyLimit,
+  initialBuckets = [],
+  initialIncomes = [],
+  initialBills = [],
+  trackingMode = "tracking_only"
+}: DashboardClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>("calendar");
   const [isShortcutModalOpen, setIsShortcutModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -369,7 +377,9 @@ export function DashboardClient({ initialExpenses, dailyLimit, initialBuckets = 
           className={cn(
             "flex items-center gap-2 px-3 py-1.5 rounded-full transition-all",
             "bg-gradient-to-r",
-            isOverBudget
+            trackingMode === "tracking_only"
+              ? "from-teal-50 to-teal-100/50 border border-teal-200"
+              : isOverBudget
               ? "from-rose-50 to-rose-100/50 border border-rose-200"
               : budgetPercent >= 80
               ? "from-amber-50 to-amber-100/50 border border-amber-200"
@@ -381,14 +391,27 @@ export function DashboardClient({ initialExpenses, dailyLimit, initialBuckets = 
             className={cn(
               "w-2.5 h-2.5 rounded-full",
               isPending ? "animate-pulse" : "",
-              isOverBudget ? "bg-rose-500" : budgetPercent >= 80 ? "bg-amber-500" : "bg-emerald-500"
+              trackingMode === "tracking_only"
+                ? "bg-teal-500"
+                : isOverBudget
+                ? "bg-rose-500"
+                : budgetPercent >= 80
+                ? "bg-amber-500"
+                : "bg-emerald-500"
             )}
           />
-          <span className={cn("text-sm font-bold tabular-nums", statusColor)}>
-            {formatCurrency(Math.abs(todayStatus.remaining), CURRENCY)}
+          <span
+            className={cn(
+              "text-sm font-bold tabular-nums",
+              trackingMode === "tracking_only" ? "text-teal-700" : statusColor
+            )}
+          >
+            {trackingMode === "tracking_only"
+              ? formatCurrency(todayStatus.spent, CURRENCY)
+              : formatCurrency(Math.abs(todayStatus.remaining), CURRENCY)}
           </span>
           <span className="text-[10px] text-neutral-400 uppercase hidden min-[400px]:inline">
-            {isOverBudget ? "over" : "left"}
+            {trackingMode === "tracking_only" ? "spent" : isOverBudget ? "over" : "left"}
           </span>
         </button>
 
@@ -449,40 +472,66 @@ export function DashboardClient({ initialExpenses, dailyLimit, initialBuckets = 
           {/* Today's Status - Circular Progress */}
           <div className="p-4 border-b border-neutral-100">
             <div className="flex items-center gap-4">
-              <div className="relative w-20 h-20 flex-shrink-0">
-                <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-                  <circle cx="40" cy="40" r="34" fill="none" stroke="#e7e5e4" strokeWidth="6" />
-                  <circle
-                    cx="40"
-                    cy="40"
-                    r="34"
-                    fill="none"
-                    stroke={isOverBudget ? "#ef4444" : budgetPercent >= 80 ? "#f59e0b" : "#10b981"}
-                    strokeWidth="6"
-                    strokeLinecap="round"
-                    strokeDasharray={`${budgetPercent * 2.136} 213.6`}
-                    className="transition-all duration-500"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className={cn("text-lg font-bold tabular-nums", statusColor)}>
-                    {formatCurrency(Math.abs(todayStatus.remaining), CURRENCY)}
-                  </span>
-                  <span className="text-[9px] text-neutral-400 uppercase tracking-wider">
-                    {isOverBudget ? "Over" : "Left"}
-                  </span>
+              {trackingMode === "budget_enabled" ? (
+                <div className="relative w-20 h-20 flex-shrink-0">
+                  <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="34" fill="none" stroke="#e7e5e4" strokeWidth="6" />
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="34"
+                      fill="none"
+                      stroke={isOverBudget ? "#ef4444" : budgetPercent >= 80 ? "#f59e0b" : "#10b981"}
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      strokeDasharray={`${budgetPercent * 2.136} 213.6`}
+                      className="transition-all duration-500"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className={cn("text-lg font-bold tabular-nums", statusColor)}>
+                      {formatCurrency(Math.abs(todayStatus.remaining), CURRENCY)}
+                    </span>
+                    <span className="text-[9px] text-neutral-400 uppercase tracking-wider">
+                      {isOverBudget ? "Over" : "Left"}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="relative w-20 h-20 flex-shrink-0">
+                  <svg className="w-20 h-20" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="34" fill="none" stroke="#e0f2fe" strokeWidth="6" />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-lg font-bold tabular-nums text-teal-700">
+                      {formatCurrency(todayStatus.spent, CURRENCY)}
+                    </span>
+                    <span className="text-[9px] text-neutral-400 uppercase tracking-wider">
+                      Spent
+                    </span>
+                  </div>
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] text-neutral-400 uppercase tracking-wider mb-0.5">
                   {new Date().toLocaleDateString("en-US", { weekday: "long" })}
                 </p>
                 <p className="text-sm font-semibold text-neutral-800 truncate">
-                  {isOverBudget ? "Over Budget" : budgetPercent >= 80 ? "Almost There" : "On Track"}
+                  {trackingMode === "tracking_only"
+                    ? "Tracking Mode"
+                    : isOverBudget
+                    ? "Over Budget"
+                    : budgetPercent >= 80
+                    ? "Almost There"
+                    : "On Track"}
                 </p>
                 <p className="text-xs text-neutral-500 mt-1">
-                  Spent {formatCurrency(todayStatus.spent, CURRENCY)} of{" "}
-                  {formatCurrency(todayStatus.limit, CURRENCY)}
+                  {trackingMode === "tracking_only"
+                    ? `${todayExpenses.length} expense${todayExpenses.length !== 1 ? "s" : ""} today`
+                    : `Spent ${formatCurrency(todayStatus.spent, CURRENCY)} of ${formatCurrency(
+                        todayStatus.limit,
+                        CURRENCY
+                      )}`}
                 </p>
               </div>
             </div>
@@ -732,40 +781,67 @@ export function DashboardClient({ initialExpenses, dailyLimit, initialBuckets = 
 
             <div className="px-4 pb-4 border-b border-neutral-100">
               <div className="flex items-center gap-4">
-                <div className="relative w-16 h-16 flex-shrink-0">
-                  <svg className="w-16 h-16 -rotate-90" viewBox="0 0 80 80">
-                    <circle cx="40" cy="40" r="34" fill="none" stroke="#e7e5e4" strokeWidth="8" />
-                    <circle
-                      cx="40"
-                      cy="40"
-                      r="34"
-                      fill="none"
-                      stroke={isOverBudget ? "#ef4444" : budgetPercent >= 80 ? "#f59e0b" : "#10b981"}
-                      strokeWidth="8"
-                      strokeLinecap="round"
-                      strokeDasharray={`${budgetPercent * 2.136} 213.6`}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className={cn("text-base font-bold tabular-nums", statusColor)}>
-                      {Math.round(budgetPercent)}%
-                    </span>
+                {trackingMode === "budget_enabled" ? (
+                  <div className="relative w-16 h-16 flex-shrink-0">
+                    <svg className="w-16 h-16 -rotate-90" viewBox="0 0 80 80">
+                      <circle cx="40" cy="40" r="34" fill="none" stroke="#e7e5e4" strokeWidth="8" />
+                      <circle
+                        cx="40"
+                        cy="40"
+                        r="34"
+                        fill="none"
+                        stroke={isOverBudget ? "#ef4444" : budgetPercent >= 80 ? "#f59e0b" : "#10b981"}
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        strokeDasharray={`${budgetPercent * 2.136} 213.6`}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className={cn("text-base font-bold tabular-nums", statusColor)}>
+                        {Math.round(budgetPercent)}%
+                      </span>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="relative w-16 h-16 flex-shrink-0">
+                    <svg className="w-16 h-16" viewBox="0 0 80 80">
+                      <circle cx="40" cy="40" r="34" fill="none" stroke="#e0f2fe" strokeWidth="8" />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-base font-bold tabular-nums text-teal-700">
+                        {formatCurrency(todayStatus.spent, CURRENCY)}
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <div className="flex-1">
                   <p className="text-xs text-neutral-400 uppercase tracking-wider">
                     {new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
                   </p>
-                  <p className={cn("text-xl font-bold tabular-nums", statusColor)}>
-                    {formatCurrency(Math.abs(todayStatus.remaining), CURRENCY)}{" "}
-                    <span className="text-sm font-normal text-neutral-400">
-                      {isOverBudget ? "over" : "left"}
-                    </span>
-                  </p>
-                  <p className="text-xs text-neutral-500 mt-0.5">
-                    Spent {formatCurrency(todayStatus.spent, CURRENCY)} of{" "}
-                    {formatCurrency(todayStatus.limit, CURRENCY)}
-                  </p>
+                  {trackingMode === "tracking_only" ? (
+                    <>
+                      <p className="text-xl font-bold tabular-nums text-teal-700">
+                        {formatCurrency(todayStatus.spent, CURRENCY)}{" "}
+                        <span className="text-sm font-normal text-neutral-400">spent</span>
+                      </p>
+                      <p className="text-xs text-neutral-500 mt-0.5">
+                        {todayExpenses.length} expense{todayExpenses.length !== 1 ? "s" : ""} today
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className={cn("text-xl font-bold tabular-nums", statusColor)}>
+                        {formatCurrency(Math.abs(todayStatus.remaining), CURRENCY)}{" "}
+                        <span className="text-sm font-normal text-neutral-400">
+                          {isOverBudget ? "over" : "left"}
+                        </span>
+                      </p>
+                      <p className="text-xs text-neutral-500 mt-0.5">
+                        Spent {formatCurrency(todayStatus.spent, CURRENCY)} of{" "}
+                        {formatCurrency(todayStatus.limit, CURRENCY)}
+                      </p>
+                    </>
+                  )}
                 </div>
                 <button
                   onClick={() => setIsQuickActionsOpen(false)}

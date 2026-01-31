@@ -39,6 +39,7 @@ class SettingsRepository {
         timezone: "Asia/Manila",
         week_starts_on: 0,
         show_savings_in_allocation: true,
+        tracking_mode: "tracking_only",
       };
 
       const { data: created, error: createError } = await supabase
@@ -116,6 +117,7 @@ class SettingsRepository {
         timezone: "Asia/Manila",
         week_starts_on: 0,
         show_savings_in_allocation: true,
+        tracking_mode: "tracking_only",
         ...data,
       })
       .select()

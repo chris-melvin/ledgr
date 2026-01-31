@@ -78,6 +78,8 @@ export type RoadmapStatus =
   | "in_progress"
   | "completed";
 
+export type TrackingMode = "tracking_only" | "budget_enabled";
+
 // =============================================================================
 // CORE TYPES (Updated)
 // =============================================================================
@@ -195,6 +197,7 @@ export interface UserSettings {
   total_monthly_income: number | null;
   total_fixed_expenses: number | null;
   calculated_daily_limit: number | null;
+  tracking_mode: TrackingMode; // tracking_only or budget_enabled
   created_at: string;
   updated_at: string;
 }
@@ -422,6 +425,7 @@ export type UserSettingsInsert = {
   total_monthly_income?: number | null;
   total_fixed_expenses?: number | null;
   calculated_daily_limit?: number | null;
+  tracking_mode?: TrackingMode;
   created_at?: string;
   updated_at?: string;
 };

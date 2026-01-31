@@ -32,8 +32,12 @@ export default async function DashboardPage() {
     userSettings = await settingsRepository.getOrCreate(supabase, user.id);
 
     // Check if we need to redirect to setup
-    // But only after the UI tour is complete (or skipped)
-    if (!userSettings.budget_setup_completed) {
+    // Only redirect if:
+    // 1. User has enabled budget mode (tracking_mode = "budget_enabled")
+    // 2. Budget setup is not completed
+    // 3. UI tour is complete (or skipped)
+    const isBudgetModeEnabled = userSettings.tracking_mode === "budget_enabled";
+    if (isBudgetModeEnabled && !userSettings.budget_setup_completed) {
       const onboarding = await onboardingRepository.getOrCreate(supabase, user.id);
       if (onboarding.has_completed_tour || onboarding.tour_skipped_at) {
         shouldRedirectToSetup = true;
@@ -107,6 +111,7 @@ export default async function DashboardPage() {
         initialBuckets={buckets}
         initialIncomes={incomes}
         initialBills={bills}
+        trackingMode={userSettings?.tracking_mode || "tracking_only"}
       />
       <OnboardingTour />
     </OnboardingProvider>
