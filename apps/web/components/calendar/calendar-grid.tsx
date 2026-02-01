@@ -1,19 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTimezone } from "@/components/providers";
+import * as dateUtils from "@/lib/utils/date";
 import { CalendarNav } from "./calendar-nav";
 import { CalendarDayCell } from "./calendar-day";
-import { daysInMonth, firstDayOfMonth, formatKey } from "@/lib/utils";
+import { daysInMonth, firstDayOfMonth } from "@/lib/utils";
 import { DEFAULT_DAILY_LIMIT } from "@/lib/constants";
-import type { CalendarDay, LocalExpense, LocalIncome, LocalBill, BucketSpendingSummary } from "@/lib/types";
-import type { BudgetBucket } from "@repo/database";
+import type { CalendarDay, LocalIncome, LocalBill, BucketSpendingSummary } from "@/lib/types";
+import type { Expense, BudgetBucket } from "@repo/database";
 
 // Short weekday labels for mobile
 const WEEKDAYS_SHORT = ["S", "M", "T", "W", "T", "F", "S"];
 const WEEKDAYS_FULL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 interface CalendarGridProps {
-  expenses: LocalExpense[];
+  expenses: Expense[];
   incomes?: LocalIncome[];
   bills?: LocalBill[];
   buckets?: BudgetBucket[];
@@ -21,8 +23,14 @@ interface CalendarGridProps {
   selectedDate?: Date | null;
 }
 
+/**
+ * Calendar grid component with timezone-aware date handling
+ *
+ * Updated to use Expense type with occurred_at timestamps
+ */
 export function CalendarGrid({ expenses, incomes = [], bills = [], buckets = [], onDayClick, selectedDate }: CalendarGridProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const { timezone } = useTimezone();
 
   // Debug logging
   if (process.env.NODE_ENV === "development") {
@@ -52,10 +60,10 @@ export function CalendarGrid({ expenses, incomes = [], bills = [], buckets = [],
     // Create bucket lookup map for efficiency
     const bucketMap = new Map(buckets.map((b) => [b.id, b]));
 
-    // Filter expenses for current month
+    // Filter expenses for current month in user's timezone
     const monthExpenses = expenses.filter((e) => {
-      const d = new Date(e.date);
-      return d.getMonth() === month && d.getFullYear() === year;
+      const expenseDate = dateUtils.toUserDate(e.occurred_at, timezone);
+      return expenseDate.getMonth() === month && expenseDate.getFullYear() === year;
     });
 
     // Pad beginning of month
@@ -74,12 +82,13 @@ export function CalendarGrid({ expenses, incomes = [], bills = [], buckets = [],
     // Generate month days
     for (let d = 1; d <= totalDays; d++) {
       const dateObj = new Date(year, month, d);
-      const key = formatKey(dateObj);
+      const key = dateUtils.formatInTimezone(dateObj, timezone, "yyyy-MM-dd");
 
-      // Get all expenses for this day
-      const dayExpenses = monthExpenses.filter(
-        (e) => formatKey(new Date(e.date)) === key
-      );
+      // Get all expenses for this day in user's timezone
+      const dayExpenses = monthExpenses.filter((e) => {
+        const expenseDateStr = dateUtils.formatInTimezone(new Date(e.occurred_at), timezone, "yyyy-MM-dd");
+        return expenseDateStr === key;
+      });
 
       // Calculate total spent (all buckets - for display)
       const spent = dayExpenses.reduce((sum, e) => sum + e.amount, 0);
@@ -207,7 +216,7 @@ export function CalendarGrid({ expenses, incomes = [], bills = [], buckets = [],
     }
 
     return days;
-  }, [currentDate, expenses, incomes, bills, buckets]);
+  }, [currentDate, expenses, incomes, bills, buckets, timezone]);
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -242,7 +251,8 @@ export function CalendarGrid({ expenses, incomes = [], bills = [], buckets = [],
       <div className="grid grid-cols-7">
         {calendarDays.map((day) => {
           const isSelected = selectedDate && !day.isPadding
-            ? formatKey(selectedDate) === formatKey(day.date)
+            ? dateUtils.formatInTimezone(selectedDate, timezone, "yyyy-MM-dd") ===
+              dateUtils.formatInTimezone(day.date, timezone, "yyyy-MM-dd")
             : false;
           return (
             <CalendarDayCell
