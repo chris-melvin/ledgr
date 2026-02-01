@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { formatKey } from "@/lib/utils";
-import type { LocalExpense } from "@/lib/types";
+import { useTimezone } from "@/components/providers";
+import * as dateUtils from "@/lib/utils/date";
+import type { Expense } from "@repo/database";
 
 interface CategoryData {
   category: string;
@@ -69,7 +70,14 @@ function getWeekEnd(date: Date): Date {
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-export function useWeeklyPatterns(expenses: LocalExpense[]): WeeklyPatterns {
+/**
+ * Hook for analyzing weekly spending patterns with timezone support
+ *
+ * Updated to use timestamps and timezone-aware date comparisons
+ */
+export function useWeeklyPatterns(expenses: Expense[]): WeeklyPatterns {
+  const { timezone } = useTimezone();
+
   return useMemo(() => {
     const today = new Date();
     const thisWeekStart = getWeekStart(today);
@@ -80,14 +88,14 @@ export function useWeeklyPatterns(expenses: LocalExpense[]): WeeklyPatterns {
     const lastWeekEnd = new Date(thisWeekEnd);
     lastWeekEnd.setDate(lastWeekEnd.getDate() - 7);
 
-    // Filter expenses by week
+    // Filter expenses by week using timestamps
     const thisWeekExpenses = expenses.filter((e) => {
-      const date = new Date(e.date);
+      const date = new Date(e.occurred_at);
       return date >= thisWeekStart && date <= thisWeekEnd;
     });
 
     const lastWeekExpenses = expenses.filter((e) => {
-      const date = new Date(e.date);
+      const date = new Date(e.occurred_at);
       return date >= lastWeekStart && date <= lastWeekEnd;
     });
 
@@ -125,10 +133,10 @@ export function useWeeklyPatterns(expenses: LocalExpense[]): WeeklyPatterns {
       });
     }
 
-    // Find highest day
+    // Find highest day using timestamps
     const dayTotals = new Map<number, number>();
     for (const expense of thisWeekExpenses) {
-      const date = new Date(expense.date);
+      const date = new Date(expense.occurred_at);
       const dayOfWeek = date.getDay();
       const existing = dayTotals.get(dayOfWeek) || 0;
       dayTotals.set(dayOfWeek, existing + expense.amount);
@@ -167,5 +175,5 @@ export function useWeeklyPatterns(expenses: LocalExpense[]): WeeklyPatterns {
       highestDay,
       suggestion,
     };
-  }, [expenses]);
+  }, [expenses, timezone]);
 }

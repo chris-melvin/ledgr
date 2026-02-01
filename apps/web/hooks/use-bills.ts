@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { useTimezone } from "@/components/providers";
+import * as dateUtils from "@/lib/utils/date";
 import type { LocalBill } from "@/lib/types";
 
 const STORAGE_KEY = "usemargin_bills";
@@ -26,7 +28,13 @@ function saveBills(bills: LocalBill[]): void {
   }
 }
 
+/**
+ * Hook for managing local bills with localStorage persistence
+ *
+ * Updated to use timezone-aware date utilities
+ */
 export function useBills(initialBills: LocalBill[] = []) {
+  const { timezone } = useTimezone();
   const [bills, setBills] = useState<LocalBill[]>(() => {
     const stored = loadBills();
     return stored.length > 0 ? stored : initialBills;
@@ -74,7 +82,7 @@ export function useBills(initialBills: LocalBill[] = []) {
 
   // Mark a bill as paid
   const markBillPaid = useCallback((id: string, paidDate?: string) => {
-    const date = paidDate || new Date().toISOString().split("T")[0];
+    const date = paidDate || dateUtils.formatInTimezone(new Date(), timezone, "yyyy-MM-dd");
     setBills((prev) => {
       const updated = prev.map((bill) =>
         bill.id === id
@@ -84,11 +92,11 @@ export function useBills(initialBills: LocalBill[] = []) {
       saveBills(updated);
       return updated;
     });
-  }, []);
+  }, [timezone]);
 
   // Mark a bill as received (bill notice received)
   const markBillReceived = useCallback((id: string, receiveDate?: string) => {
-    const date = receiveDate || new Date().toISOString().split("T")[0];
+    const date = receiveDate || dateUtils.formatInTimezone(new Date(), timezone, "yyyy-MM-dd");
     setBills((prev) => {
       const updated = prev.map((bill) =>
         bill.id === id ? { ...bill, receiveDate: date } : bill
@@ -96,7 +104,7 @@ export function useBills(initialBills: LocalBill[] = []) {
       saveBills(updated);
       return updated;
     });
-  }, []);
+  }, [timezone]);
 
   // Get bills due on a specific date
   const getBillsForDate = useCallback(

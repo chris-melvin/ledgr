@@ -1,7 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import type { LocalExpense, HeatmapCell, DateRange } from "@/lib/types";
+import { useTimezone } from "@/components/providers";
+import * as dateUtils from "@/lib/utils/date";
+import type { Expense } from "@repo/database";
+import type { HeatmapCell, DateRange } from "@/lib/types";
 
 // Get ISO week number
 function getWeekNumber(date: Date): number {
@@ -13,18 +16,24 @@ function getWeekNumber(date: Date): number {
 }
 
 interface UseSpendingHeatmapProps {
-  expenses: LocalExpense[];
+  expenses: Expense[];
   dateRange: DateRange;
 }
 
+/**
+ * Hook for generating spending heatmap data with timezone support
+ *
+ * Groups expenses by date in user's timezone for accurate daily aggregation
+ */
 export function useSpendingHeatmap({
   expenses,
   dateRange,
 }: UseSpendingHeatmapProps): HeatmapCell[] {
+  const { timezone } = useTimezone();
+
   return useMemo(() => {
     const startDate = new Date(dateRange.start);
     const endDate = new Date(dateRange.end);
-    endDate.setHours(23, 59, 59, 999);
 
     // Create a map of date -> { amount, count }
     const dateMap = new Map<string, { amount: number; count: number }>();
@@ -32,16 +41,16 @@ export function useSpendingHeatmap({
     // Initialize all dates in range
     const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
-      const dateKey = currentDate.toISOString().split("T")[0]!;
+      const dateKey = dateUtils.formatInTimezone(currentDate, timezone, "yyyy-MM-dd");
       dateMap.set(dateKey, { amount: 0, count: 0 });
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Aggregate expenses by date
+    // Aggregate expenses by date in user's timezone
     expenses.forEach((expense) => {
-      const expenseDate = new Date(expense.date);
+      const expenseDate = new Date(expense.occurred_at);
       if (expenseDate >= startDate && expenseDate <= endDate) {
-        const dateKey = expense.date.split("T")[0]!;
+        const dateKey = dateUtils.formatInTimezone(expenseDate, timezone, "yyyy-MM-dd");
         const existing = dateMap.get(dateKey);
         if (existing) {
           existing.amount += expense.amount;
@@ -53,7 +62,7 @@ export function useSpendingHeatmap({
     // Convert to HeatmapCell array
     const cells: HeatmapCell[] = [];
     dateMap.forEach((data, dateKey) => {
-      const date = new Date(dateKey);
+      const date = dateUtils.parseInTimezone(dateKey, timezone, "yyyy-MM-dd");
       cells.push({
         date: dateKey,
         dayOfWeek: date.getDay(),
@@ -67,5 +76,5 @@ export function useSpendingHeatmap({
     cells.sort((a, b) => a.date.localeCompare(b.date));
 
     return cells;
-  }, [expenses, dateRange]);
+  }, [expenses, dateRange, timezone]);
 }

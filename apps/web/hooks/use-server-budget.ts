@@ -1,6 +1,8 @@
 "use client";
 
 import { useOptimistic, useTransition, useCallback } from "react";
+import { useTimezone } from "@/components/providers";
+import * as dateUtils from "@/lib/utils/date";
 import {
   createIncome as createIncomeAction,
   updateIncome as updateIncomeAction,
@@ -49,9 +51,12 @@ interface UseServerBudgetOptions {
 
 /**
  * Hook for managing budget items (incomes, bills, debts, subscriptions) with optimistic updates
+ *
+ * Updated to use timestamps exclusively
  */
 export function useServerBudget({ incomes: initialIncomes, bills: initialBills }: UseServerBudgetOptions) {
   const [isPending, startTransition] = useTransition();
+  const { timezone } = useTimezone();
 
   // Optimistic state for incomes
   const [optimisticIncomes, setOptimisticIncomes] = useOptimistic<
@@ -99,7 +104,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
   const addIncome = useCallback(
     async (data: CreateIncomeInput): Promise<{ success: boolean; error?: string }> => {
       const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const now = new Date().toISOString();
+      const now = dateUtils.getCurrentTimestamp(timezone);
 
       const optimisticIncome: OptimisticIncome = {
         id: tempId,
@@ -109,10 +114,10 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
         day_of_month: data.day_of_month ?? null,
         frequency: data.frequency ?? "monthly",
         day_of_week: data.day_of_week ?? null,
-        start_date: data.start_date ?? null,
-        end_date: data.end_date ?? null,
-        expected_date: data.expected_date ?? null,
-        received_date: null,
+        start_timestamp: data.start_timestamp ?? null,
+        end_timestamp: data.end_timestamp ?? null,
+        expected_timestamp: data.expected_timestamp ?? null,
+        received_timestamp: null,
         is_active: data.is_active ?? true,
         status: "expected",
         created_at: now,
@@ -134,7 +139,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
 
       return result;
     },
-    [setOptimisticIncomes]
+    [setOptimisticIncomes, timezone]
   );
 
   /**
@@ -193,12 +198,13 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
    * Mark an income as received with optimistic update
    */
   const markIncomeReceived = useCallback(
-    async (id: string, receivedDate?: string): Promise<{ success: boolean; error?: string }> => {
+    async (id: string, receivedTimestamp?: string): Promise<{ success: boolean; error?: string }> => {
       if (id.startsWith("temp-")) {
         return { success: false, error: "Cannot update pending income" };
       }
 
       let result: { success: boolean; error?: string } = { success: true };
+      const timestamp = receivedTimestamp ?? dateUtils.getCurrentTimestamp(timezone);
 
       startTransition(async () => {
         setOptimisticIncomes({
@@ -206,11 +212,11 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
           id,
           data: {
             status: "received",
-            received_date: receivedDate ?? new Date().toISOString().split("T")[0],
+            received_timestamp: timestamp,
           },
         });
 
-        const serverResult = await markIncomeReceivedAction(id, receivedDate);
+        const serverResult = await markIncomeReceivedAction(id, timestamp, timezone);
         if (!serverResult.success) {
           result = { success: false, error: serverResult.error };
           console.error("Failed to mark income as received:", serverResult.error);
@@ -219,7 +225,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
 
       return result;
     },
-    [setOptimisticIncomes]
+    [setOptimisticIncomes, timezone]
   );
 
   /**
@@ -237,7 +243,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
         setOptimisticIncomes({
           type: "update",
           id,
-          data: { status: "expected", received_date: null },
+          data: { status: "expected", received_timestamp: null },
         });
 
         const serverResult = await resetIncomeStatusAction(id);
@@ -260,7 +266,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
   const addBill = useCallback(
     async (data: CreateBillInput): Promise<{ success: boolean; error?: string }> => {
       const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const now = new Date().toISOString();
+      const now = dateUtils.getCurrentTimestamp(timezone);
 
       const optimisticBill: OptimisticDebt = {
         id: tempId,
@@ -279,13 +285,13 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
         payment_mode: data.payment_mode ?? "manual",
         payment_bucket_id: data.payment_bucket_id ?? null,
         day_of_week: data.day_of_week ?? null,
-        start_date: data.start_date ?? null,
-        end_date: data.end_date ?? null,
+        start_timestamp: data.start_timestamp ?? null,
+        end_timestamp: data.end_timestamp ?? null,
         is_recurring: data.is_recurring ?? true,
         is_active: data.is_active ?? true,
         status: "pending",
-        paid_date: null,
-        receive_date: null,
+        paid_timestamp: null,
+        receive_timestamp: null,
         created_at: now,
         updated_at: now,
         pending: true,
@@ -305,7 +311,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
 
       return result;
     },
-    [setOptimisticBills]
+    [setOptimisticBills, timezone]
   );
 
   /**
@@ -364,12 +370,13 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
    * Mark a bill as paid with optimistic update
    */
   const markBillPaid = useCallback(
-    async (id: string, paidDate?: string): Promise<{ success: boolean; error?: string }> => {
+    async (id: string, paidTimestamp?: string): Promise<{ success: boolean; error?: string }> => {
       if (id.startsWith("temp-")) {
         return { success: false, error: "Cannot update pending bill" };
       }
 
       let result: { success: boolean; error?: string } = { success: true };
+      const timestamp = paidTimestamp ?? dateUtils.getCurrentTimestamp(timezone);
 
       startTransition(async () => {
         setOptimisticBills({
@@ -377,11 +384,11 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
           id,
           data: {
             status: "paid",
-            paid_date: paidDate ?? new Date().toISOString().split("T")[0],
+            paid_timestamp: timestamp,
           },
         });
 
-        const serverResult = await markBillPaidAction(id, paidDate);
+        const serverResult = await markBillPaidAction(id, timestamp, timezone);
         if (!serverResult.success) {
           result = { success: false, error: serverResult.error };
           console.error("Failed to mark bill as paid:", serverResult.error);
@@ -390,7 +397,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
 
       return result;
     },
-    [setOptimisticBills]
+    [setOptimisticBills, timezone]
   );
 
   /**
@@ -408,7 +415,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
         setOptimisticBills({
           type: "update",
           id,
-          data: { status: "pending", paid_date: null },
+          data: { status: "pending", paid_timestamp: null },
         });
 
         const serverResult = await resetBillStatusAction(id);
@@ -427,7 +434,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
    * Make a debt payment with optimistic update
    */
   const makeDebtPayment = useCallback(
-    async (id: string, paymentAmount: number, paidDate?: string): Promise<{ success: boolean; error?: string }> => {
+    async (id: string, paymentAmount: number, paidTimestamp?: string): Promise<{ success: boolean; error?: string }> => {
       if (id.startsWith("temp-")) {
         return { success: false, error: "Cannot update pending debt" };
       }
@@ -440,6 +447,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
 
       const currentBalance = currentDebt.remaining_balance ?? currentDebt.total_amount ?? 0;
       const newBalance = Math.max(0, currentBalance - paymentAmount);
+      const timestamp = paidTimestamp ?? dateUtils.getCurrentTimestamp(timezone);
 
       let result: { success: boolean; error?: string } = { success: true };
 
@@ -450,11 +458,11 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
           data: {
             remaining_balance: newBalance,
             status: "paid",
-            paid_date: paidDate ?? new Date().toISOString().split("T")[0],
+            paid_timestamp: timestamp,
           },
         });
 
-        const serverResult = await makeDebtPaymentAction(id, paymentAmount, paidDate);
+        const serverResult = await makeDebtPaymentAction(id, paymentAmount, timestamp, timezone);
         if (!serverResult.success) {
           result = { success: false, error: serverResult.error };
           console.error("Failed to make debt payment:", serverResult.error);
@@ -463,7 +471,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
 
       return result;
     },
-    [setOptimisticBills, optimisticBills]
+    [setOptimisticBills, optimisticBills, timezone]
   );
 
   /**
@@ -474,7 +482,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
     async (
       id: string,
       paymentAmount: number,
-      paidDate?: string,
+      paidTimestamp?: string,
       notes?: string
     ): Promise<{ success: boolean; error?: string }> => {
       if (id.startsWith("temp-")) {
@@ -489,7 +497,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
 
       const currentBalance = currentDebt.remaining_balance ?? currentDebt.total_amount ?? 0;
       const newBalance = Math.max(0, currentBalance - paymentAmount);
-      const paymentDateStr = paidDate ?? new Date().toISOString().split("T")[0];
+      const timestamp = paidTimestamp ?? dateUtils.getCurrentTimestamp(timezone);
 
       let result: { success: boolean; error?: string } = { success: true };
 
@@ -500,14 +508,14 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
           data: {
             remaining_balance: newBalance,
             status: "paid",
-            paid_date: paymentDateStr,
+            paid_timestamp: timestamp,
           },
         });
 
         const serverResult = await recordDebtPaymentAction({
           debt_id: id,
           amount: paymentAmount,
-          payment_date: paymentDateStr,
+          payment_timestamp: timestamp,
           notes,
         });
         if (!serverResult.success) {
@@ -518,7 +526,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
 
       return result;
     },
-    [setOptimisticBills, optimisticBills]
+    [setOptimisticBills, optimisticBills, timezone]
   );
 
   return {

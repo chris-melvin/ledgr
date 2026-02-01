@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
+import { useTimezone } from "@/components/providers";
+import * as dateUtils from "@/lib/utils/date";
 import type { Asset, Liability, NetWorthSnapshot, DateRange } from "@/lib/types";
 
 const ASSETS_KEY = "usemargin_assets";
@@ -67,7 +69,7 @@ function saveSnapshots(snapshots: NetWorthSnapshot[]): void {
 }
 
 // Generate demo data for visualization
-function generateDemoSnapshots(): NetWorthSnapshot[] {
+function generateDemoSnapshots(timezone: string): NetWorthSnapshot[] {
   const snapshots: NetWorthSnapshot[] = [];
   const today = new Date();
 
@@ -91,7 +93,7 @@ function generateDemoSnapshots(): NetWorthSnapshot[] {
     );
 
     snapshots.push({
-      date: date.toISOString().split("T")[0]!,
+      date: dateUtils.formatInTimezone(date, timezone, "yyyy-MM-dd"),
       totalAssets,
       totalLiabilities,
       netWorth: totalAssets - totalLiabilities,
@@ -119,7 +121,13 @@ interface UseNetWorthReturn {
   getFilteredSnapshots: (dateRange: DateRange) => NetWorthSnapshot[];
 }
 
+/**
+ * Hook for managing net worth tracking with timezone support
+ *
+ * Updated to use timezone-aware date utilities
+ */
 export function useNetWorth(): UseNetWorthReturn {
+  const { timezone } = useTimezone();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [liabilities, setLiabilities] = useState<Liability[]>([]);
   const [snapshots, setSnapshots] = useState<NetWorthSnapshot[]>([]);
@@ -133,7 +141,7 @@ export function useNetWorth(): UseNetWorthReturn {
 
     // If no snapshots, generate demo data
     if (storedSnapshots.length === 0) {
-      storedSnapshots = generateDemoSnapshots();
+      storedSnapshots = generateDemoSnapshots(timezone);
       saveSnapshots(storedSnapshots);
     }
 
@@ -141,7 +149,7 @@ export function useNetWorth(): UseNetWorthReturn {
     setLiabilities(storedLiabilities);
     setSnapshots(storedSnapshots);
     setIsLoaded(true);
-  }, []);
+  }, [timezone]);
 
   // Calculate totals
   const totalAssets = useMemo(
@@ -240,7 +248,7 @@ export function useNetWorth(): UseNetWorthReturn {
 
   // Take a snapshot of current net worth
   const takeSnapshot = useCallback(() => {
-    const today = new Date().toISOString().split("T")[0]!;
+    const today = dateUtils.formatInTimezone(new Date(), timezone, "yyyy-MM-dd");
     const snapshot: NetWorthSnapshot = {
       date: today,
       totalAssets,
@@ -257,7 +265,7 @@ export function useNetWorth(): UseNetWorthReturn {
       saveSnapshots(updated);
       return updated;
     });
-  }, [totalAssets, totalLiabilities, netWorth]);
+  }, [totalAssets, totalLiabilities, netWorth, timezone]);
 
   // Filter snapshots by date range
   const getFilteredSnapshots = useCallback(
