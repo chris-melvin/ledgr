@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { OnboardingProvider, OnboardingTour } from "@/components/onboarding";
+import { TimezoneProvider } from "@/components/providers";
 import { onboardingRepository } from "@/lib/repositories/onboarding.repository";
 import { settingsRepository, budgetBucketRepository, incomeRepository, billRepository } from "@/lib/repositories";
 import type { Expense, UserOnboarding, UserSettings, BudgetBucket, Income, Debt } from "@repo/database";
@@ -106,16 +107,18 @@ export default async function DashboardPage() {
   }
 
   return (
-    <OnboardingProvider initialState={onboardingState}>
-      <DashboardClient
-        initialExpenses={expenses}
-        dailyLimit={userSettings?.default_daily_limit}
-        initialBuckets={buckets}
-        initialIncomes={incomes}
-        initialBills={bills}
-        trackingMode={userSettings?.tracking_mode || "tracking_only"}
-      />
-      <OnboardingTour />
-    </OnboardingProvider>
+    <TimezoneProvider initialTimezone={timezone}>
+      <OnboardingProvider initialState={onboardingState}>
+        <DashboardClient
+          initialExpenses={expenses}
+          dailyLimit={userSettings?.default_daily_limit}
+          initialBuckets={buckets}
+          initialIncomes={incomes}
+          initialBills={bills}
+          trackingMode={userSettings?.tracking_mode || "tracking_only"}
+        />
+        <OnboardingTour />
+      </OnboardingProvider>
+    </TimezoneProvider>
   );
 }

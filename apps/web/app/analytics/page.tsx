@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { checkFeatureAccess } from "@/lib/access-control";
 import { AnalyticsContent } from "./analytics-content";
 import { UpgradePrompt } from "@/components/subscription/upgrade-prompt";
+import { TimezoneProvider } from "@/components/providers";
+import { settingsRepository } from "@/lib/repositories";
+import { DEFAULT_TIMEZONE } from "@/lib/utils/date";
 
 export default async function AnalyticsPage() {
   const supabase = await createClient();
@@ -18,6 +21,15 @@ export default async function AnalyticsPage() {
   // Check feature access
   const accessResult = await checkFeatureAccess(supabase, user.id, "analytics");
 
+  // Get user timezone from settings
+  let timezone = DEFAULT_TIMEZONE;
+  try {
+    const settings = await settingsRepository.get(supabase, user.id);
+    timezone = settings?.timezone ?? DEFAULT_TIMEZONE;
+  } catch {
+    // Use default timezone if settings not available
+  }
+
   // If no access, show upgrade prompt
   if (!accessResult.hasAccess) {
     return (
@@ -32,5 +44,9 @@ export default async function AnalyticsPage() {
   }
 
   // User has access, render analytics
-  return <AnalyticsContent />;
+  return (
+    <TimezoneProvider initialTimezone={timezone}>
+      <AnalyticsContent />
+    </TimezoneProvider>
+  );
 }
