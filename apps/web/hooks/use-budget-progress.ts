@@ -6,6 +6,7 @@ import {
   calculateWeeklyProgress,
   calculateMonthlyProgress,
   getPositiveMessage,
+  formatDateKey,
 } from "@/lib/budget-progress/calculations";
 import type {
   TodayStatus,
@@ -16,9 +17,10 @@ import type {
 
 /**
  * Minimal expense interface for budget calculations
+ * Uses occurred_at timestamp which is converted to date for calculations
  */
 interface ExpenseForBudget {
-  date: string;
+  occurred_at: string;
   amount: number;
 }
 
@@ -50,8 +52,10 @@ export function useBudgetProgress(
     const dailyTotals = new Map<string, number>();
 
     for (const expense of expenses) {
-      const current = dailyTotals.get(expense.date) ?? 0;
-      dailyTotals.set(expense.date, current + expense.amount);
+      // Convert timestamp to date key (YYYY-MM-DD)
+      const dateKey = formatDateKey(new Date(expense.occurred_at));
+      const current = dailyTotals.get(dateKey) ?? 0;
+      dailyTotals.set(dateKey, current + expense.amount);
     }
 
     const today = new Date();

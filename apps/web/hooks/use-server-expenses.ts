@@ -241,13 +241,18 @@ export function useServerExpenses(initialExpenses: Expense[]) {
 
   /**
    * Get expenses for a specific date
+   *
+   * Uses occurred_at timestamp for filtering, comparing in user's timezone
    */
   const getExpensesForDate = useCallback(
     (date: Date): OptimisticExpense[] => {
-      const dateStr = date.toISOString().split("T")[0];
-      return optimisticExpenses.filter((e) => e.date === dateStr);
+      const targetDate = dateUtils.toDateString(date.toISOString(), timezone);
+      return optimisticExpenses.filter((e) => {
+        const expenseDate = dateUtils.toDateString(e.occurred_at, timezone);
+        return expenseDate === targetDate;
+      });
     },
-    [optimisticExpenses]
+    [optimisticExpenses, timezone]
   );
 
   /**

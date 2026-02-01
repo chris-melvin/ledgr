@@ -54,12 +54,12 @@ function toLocalIncome(income: Income): LocalIncome {
     label: income.label,
     amount: income.amount,
     dayOfMonth: income.day_of_month ?? 1,
-    expectedDate: income.expected_date ?? undefined,
-    receivedDate: income.received_date ?? undefined,
+    expectedDate: income.expected_timestamp ?? undefined,
+    receivedDate: income.received_timestamp ?? undefined,
     isRecurring: income.frequency !== "once",
     recurringPattern: income.frequency !== "once" ? {
       frequency: income.frequency as "weekly" | "biweekly" | "monthly" | "quarterly" | "yearly",
-      endDate: income.end_date ?? undefined,
+      endDate: income.end_timestamp ?? undefined,
     } : undefined,
     status: income.status as "pending" | "received" | "expected",
   };
@@ -333,7 +333,8 @@ export function DashboardClient({
 
   const handleSaveAndLogShortcut = async (trigger: string, label: string, amount: number, icon?: string) => {
     addShortcut(trigger, label, icon);
-    await addExpense(new Date(), amount, label);
+    const timestamp = dateUtils.getCurrentTimestamp(timezone);
+    await addExpense(timestamp, amount, label);
     clearPendingShortcut();
   };
 
@@ -748,11 +749,7 @@ export function DashboardClient({
                             <div>
                               <p className="text-sm font-medium text-neutral-800">{expense.label}</p>
                               <p className="text-xs text-neutral-400">
-                                {new Date(expense.date).toLocaleDateString("en-US", {
-                                  weekday: "short",
-                                  month: "short",
-                                  day: "numeric",
-                                })}
+                                {dateUtils.formatDate(expense.occurred_at, timezone, dateUtils.DATE_FORMATS.WEEKDAY_SHORT)}
                               </p>
                             </div>
                             <span className="text-sm font-semibold text-neutral-700 tabular-nums">

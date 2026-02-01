@@ -70,6 +70,8 @@ export const DATE_FORMATS = {
   MONTH_YEAR: "MMMM yyyy", // January 2024
   MONTH_DAY: "MMM d", // Jan 1
   YEAR: "yyyy", // 2024
+  WEEKDAY_LONG: "EEEE, MMMM d, yyyy", // Monday, January 1, 2024 (same as LONG)
+  WEEKDAY_SHORT: "EEE, MMM d", // Mon, Jan 1
 } as const;
 
 /**
@@ -655,4 +657,141 @@ export function isFuture(
 ): boolean {
   const now = getCurrentTimestamp(timezone);
   return isAfterTimestamp(timestamp, now);
+}
+
+// =============================================================================
+// ADDITIONAL HELPERS FOR COMPATIBILITY
+// =============================================================================
+
+/**
+ * Format a timestamp or Date in a specific timezone
+ *
+ * @param input - UTC timestamp string or Date object
+ * @param timezone - Target timezone
+ * @param formatString - Optional format pattern
+ */
+export function formatInTimezone(
+  input: string | Date,
+  timezone: string = DEFAULT_TIMEZONE,
+  formatString: string = DATE_FORMATS.ISO_DATE
+): string {
+  const timestamp = typeof input === "string" ? input : input.toISOString();
+  return formatInTimeZone(timestamp, timezone, formatString);
+}
+
+/**
+ * Parse a date string in a specific timezone
+ *
+ * @param dateStr - Date string to parse (e.g., "2024-01-15")
+ * @param timezone - Timezone to interpret the date in
+ * @param _formatStr - Format string (unused, for compatibility)
+ * @returns Date object
+ */
+export function parseInTimezone(
+  dateStr: string,
+  timezone: string = DEFAULT_TIMEZONE,
+  _formatStr?: string // Accept but ignore format string for compatibility
+): Date {
+  const date = parseISO(dateStr);
+  return toZonedTime(date, timezone);
+}
+
+/**
+ * Get start of day for a Date object in a timezone
+ * Returns a Date object (not timestamp string)
+ */
+export function startOfDayInTimezone(
+  date: Date,
+  timezone: string = DEFAULT_TIMEZONE
+): Date {
+  const zoned = toZonedTime(date, timezone);
+  return startOfDay(zoned);
+}
+
+/**
+ * Get end of day for a Date object in a timezone
+ * Returns a Date object (not timestamp string)
+ */
+export function endOfDayInTimezone(
+  date: Date,
+  timezone: string = DEFAULT_TIMEZONE
+): Date {
+  const zoned = toZonedTime(date, timezone);
+  return endOfDay(zoned);
+}
+
+/**
+ * Get start of week for a Date object in a timezone
+ * Returns a Date object (not timestamp string)
+ */
+export function startOfWeekInTimezone(
+  date: Date,
+  timezone: string = DEFAULT_TIMEZONE,
+  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 0
+): Date {
+  const zoned = toZonedTime(date, timezone);
+  return startOfWeek(zoned, { weekStartsOn });
+}
+
+/**
+ * Get start of month for a Date object in a timezone
+ * Returns a Date object (not timestamp string)
+ */
+export function startOfMonthInTimezone(
+  date: Date,
+  timezone: string = DEFAULT_TIMEZONE
+): Date {
+  const zoned = toZonedTime(date, timezone);
+  return startOfMonth(zoned);
+}
+
+/**
+ * Get start of year for a Date object in a timezone
+ * Returns a Date object (not timestamp string)
+ */
+export function startOfYearInTimezone(
+  date: Date,
+  timezone: string = DEFAULT_TIMEZONE
+): Date {
+  const zoned = toZonedTime(date, timezone);
+  return startOfYear(zoned);
+}
+
+/**
+ * Add years to a Date object with timezone awareness
+ * Returns a Date object
+ */
+export function addYearsToDate(
+  date: Date,
+  years: number,
+  timezone: string = DEFAULT_TIMEZONE
+): Date {
+  const zoned = toZonedTime(date, timezone);
+  return addYears(zoned, years);
+}
+
+// Aliases for backward compatibility (Date-based versions)
+export const startOfDay_tz = startOfDayInTimezone;
+export const endOfDay_tz = endOfDayInTimezone;
+export const startOfWeek_tz = startOfWeekInTimezone;
+export const startOfMonth_tz = startOfMonthInTimezone;
+export const startOfYear_tz = startOfYearInTimezone;
+export const addYears_tz = addYearsToDate;
+
+/**
+ * Convert a date string (YYYY-MM-DD) to a timestamp at start of day in the given timezone
+ * Useful for converting form date inputs to timestamps for storage
+ *
+ * @param dateStr - Date string in YYYY-MM-DD format
+ * @param timezone - Timezone to interpret the date in
+ * @returns ISO timestamp string at start of day in UTC
+ */
+export function toStartOfDayTimestamp(
+  dateStr: string,
+  timezone: string = DEFAULT_TIMEZONE
+): string {
+  const date = parseISO(dateStr);
+  const zonedDate = toZonedTime(date, timezone);
+  const startOfDayZoned = startOfDay(zonedDate);
+  return fromZonedTime(startOfDayZoned, timezone).toISOString();
 }

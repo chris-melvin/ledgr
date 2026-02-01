@@ -4,28 +4,29 @@ import { formatKey, daysInMonth, firstDayOfMonth, isToday, formatCurrency } from
 describe("utils", () => {
   describe("formatKey", () => {
     it("should format date as YYYY-MM-DD string", () => {
-      const date = new Date("2024-03-15T10:30:00Z");
+      // Use local date to avoid timezone issues
+      const date = new Date(2024, 2, 15, 10, 30, 0); // March 15, 2024 10:30:00 local
       expect(formatKey(date)).toBe("2024-03-15");
     });
 
     it("should handle dates at midnight", () => {
-      const date = new Date("2024-01-01T00:00:00Z");
+      const date = new Date(2024, 0, 1, 0, 0, 0); // Jan 1, 2024 midnight local
       expect(formatKey(date)).toBe("2024-01-01");
     });
 
     it("should handle dates near end of day", () => {
-      const date = new Date("2024-12-31T23:59:59Z");
+      const date = new Date(2024, 11, 31, 23, 59, 59); // Dec 31, 2024 23:59:59 local
       expect(formatKey(date)).toBe("2024-12-31");
     });
 
     it("should handle leap year date", () => {
-      const date = new Date("2024-02-29T12:00:00Z");
+      const date = new Date(2024, 1, 29, 12, 0, 0); // Feb 29, 2024 local
       expect(formatKey(date)).toBe("2024-02-29");
     });
 
     it("should return consistent format for same day different times", () => {
-      const morning = new Date("2024-06-15T08:00:00Z");
-      const evening = new Date("2024-06-15T20:00:00Z");
+      const morning = new Date(2024, 5, 15, 8, 0, 0); // June 15, 2024 8:00 local
+      const evening = new Date(2024, 5, 15, 20, 0, 0); // June 15, 2024 20:00 local
       expect(formatKey(morning)).toBe(formatKey(evening));
     });
   });
@@ -94,34 +95,35 @@ describe("utils", () => {
     });
 
     it("should return true for today's date", () => {
-      const fakeNow = new Date("2024-06-15T12:00:00Z");
+      // Use local time to avoid timezone issues
+      const fakeNow = new Date(2024, 5, 15, 12, 0, 0); // June 15, 2024 12:00 local
       vi.setSystemTime(fakeNow);
 
-      const today = new Date("2024-06-15T08:30:00Z");
+      const today = new Date(2024, 5, 15, 8, 30, 0); // June 15, 2024 8:30 local
       expect(isToday(today)).toBe(true);
     });
 
     it("should return false for yesterday", () => {
-      const fakeNow = new Date("2024-06-15T12:00:00Z");
+      const fakeNow = new Date(2024, 5, 15, 12, 0, 0); // June 15, 2024 local
       vi.setSystemTime(fakeNow);
 
-      const yesterday = new Date("2024-06-14T12:00:00Z");
+      const yesterday = new Date(2024, 5, 14, 12, 0, 0); // June 14, 2024 local
       expect(isToday(yesterday)).toBe(false);
     });
 
     it("should return false for tomorrow", () => {
-      const fakeNow = new Date("2024-06-15T12:00:00Z");
+      const fakeNow = new Date(2024, 5, 15, 12, 0, 0); // June 15, 2024 local
       vi.setSystemTime(fakeNow);
 
-      const tomorrow = new Date("2024-06-16T12:00:00Z");
+      const tomorrow = new Date(2024, 5, 16, 12, 0, 0); // June 16, 2024 local
       expect(isToday(tomorrow)).toBe(false);
     });
 
     it("should handle edge of day correctly", () => {
-      const fakeNow = new Date("2024-06-15T23:59:59Z");
+      const fakeNow = new Date(2024, 5, 15, 23, 59, 59); // June 15, 2024 23:59:59 local
       vi.setSystemTime(fakeNow);
 
-      const startOfToday = new Date("2024-06-15T00:00:00Z");
+      const startOfToday = new Date(2024, 5, 15, 0, 0, 0); // June 15, 2024 00:00:00 local
       expect(isToday(startOfToday)).toBe(true);
     });
   });

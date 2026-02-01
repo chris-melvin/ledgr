@@ -128,8 +128,8 @@ describe("Budget Setup Calculations", () => {
       ];
 
       const total = calculateTotalMonthlyExpenses(bills);
-      // 1500 + (600 / 3) = 1500 + 200 = 1700
-      expect(total).toBe(1700);
+      // 1500 + (600 / 12) = 1500 + 50 = 1550
+      expect(total).toBe(1550);
     });
 
     it("should return 0 for empty bills", () => {

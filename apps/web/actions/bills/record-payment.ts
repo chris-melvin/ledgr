@@ -7,6 +7,7 @@ import { requireAuth } from "@/lib/action-utils";
 import { type ActionResult, error, success } from "@/lib/errors";
 import type { DebtPayment, Debt } from "@repo/database";
 import { calculatePeriod } from "@/lib/utils/debt-period";
+import * as dateUtils from "@/lib/utils/date";
 
 interface RecordPaymentResult {
   payment: DebtPayment;
@@ -24,12 +25,12 @@ export async function recordDebtPayment(
   if (!authResult.success) return authResult;
   const { userId, supabase } = authResult.data;
 
-  const paymentDate = data.payment_date ?? new Date().toISOString().slice(0, 10);
+  const paymentTimestamp = data.payment_date ?? dateUtils.getCurrentTimestamp();
 
   // Validate input
   const validation = recordDebtPaymentSchema.safeParse({
     ...data,
-    payment_date: paymentDate,
+    payment_timestamp: paymentTimestamp,
   });
   if (!validation.success) {
     return error(validation.error.issues[0]?.message ?? "Invalid input", "VALIDATION_ERROR");
@@ -44,9 +45,9 @@ export async function recordDebtPayment(
 
     // Calculate billing period based on frequency
     const { periodStart, periodEnd } = calculatePeriod(
-      paymentDate,
+      paymentTimestamp,
       debt.frequency,
-      debt.start_date
+      debt.start_timestamp
     );
 
     // Check if this is an auto-deduct payment and deduct from bucket if applicable
@@ -68,9 +69,9 @@ export async function recordDebtPayment(
       user_id: userId,
       debt_id: data.debt_id,
       amount: validation.data.amount,
-      payment_date: paymentDate,
-      period_start: periodStart,
-      period_end: periodEnd,
+      payment_timestamp: paymentTimestamp,
+      period_start_timestamp: periodStart,
+      period_end_timestamp: periodEnd,
       notes: data.notes ?? null,
       source_bucket_id: sourceBucketId,
     });
@@ -82,7 +83,7 @@ export async function recordDebtPayment(
     const updatedDebt = await billRepository.update(supabase, data.debt_id, userId, {
       remaining_balance: newBalance,
       status: "paid",
-      paid_date: paymentDate,
+      paid_timestamp: paymentTimestamp,
     });
 
     revalidatePath("/dashboard");

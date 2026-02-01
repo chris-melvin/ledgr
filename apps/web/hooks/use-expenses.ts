@@ -8,9 +8,10 @@ export function useExpenses() {
   const [expenses, setExpenses] = useState<LocalExpense[]>([]);
 
   const addExpense = useCallback((date: Date, amount: number, label: string) => {
+    const timestamp = date.toISOString();
     const newExpense: LocalExpense = {
       id: crypto.randomUUID(),
-      date: date.toISOString(),
+      occurred_at: timestamp,
       amount,
       label,
     };
@@ -25,7 +26,7 @@ export function useExpenses() {
   const getExpensesForDate = useCallback(
     (date: Date) => {
       const key = formatKey(date);
-      return expenses.filter((e) => formatKey(new Date(e.date)) === key);
+      return expenses.filter((e) => formatKey(new Date(e.occurred_at)) === key);
     },
     [expenses]
   );

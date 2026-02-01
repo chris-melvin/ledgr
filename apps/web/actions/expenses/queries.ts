@@ -1,9 +1,22 @@
 "use server";
 
-import { expenseRepository } from "@/lib/repositories";
+import { expenseRepository, settingsRepository } from "@/lib/repositories";
 import { requireAuth } from "@/lib/action-utils";
 import { type ActionResult, error, success } from "@/lib/errors";
 import type { Expense } from "@repo/database";
+import { DEFAULT_TIMEZONE } from "@/lib/utils/date";
+
+/**
+ * Helper to get user's timezone from settings
+ */
+async function getUserTimezone(supabase: any, userId: string): Promise<string> {
+  try {
+    const settings = await settingsRepository.get(supabase, userId);
+    return settings?.timezone ?? DEFAULT_TIMEZONE;
+  } catch {
+    return DEFAULT_TIMEZONE;
+  }
+}
 
 /**
  * Get expenses for a specific month
@@ -17,11 +30,13 @@ export async function getExpensesForMonth(
   const { userId, supabase } = authResult.data;
 
   try {
+    const timezone = await getUserTimezone(supabase, userId);
     const expenses = await expenseRepository.findByMonth(
       supabase,
       userId,
       year,
-      month
+      month,
+      timezone
     );
     return success(expenses);
   } catch (err) {
@@ -42,11 +57,13 @@ export async function getExpensesForDateRange(
   const { userId, supabase } = authResult.data;
 
   try {
+    const timezone = await getUserTimezone(supabase, userId);
     const expenses = await expenseRepository.findByDateRange(
       supabase,
       userId,
       startDate,
-      endDate
+      endDate,
+      timezone
     );
     return success(expenses);
   } catch (err) {
@@ -66,7 +83,8 @@ export async function getExpensesForDate(
   const { userId, supabase } = authResult.data;
 
   try {
-    const expenses = await expenseRepository.findByDate(supabase, userId, date);
+    const timezone = await getUserTimezone(supabase, userId);
+    const expenses = await expenseRepository.findByDate(supabase, userId, date, timezone);
     return success(expenses);
   } catch (err) {
     console.error("Failed to fetch expenses:", err);
@@ -85,10 +103,12 @@ export async function getTotalForDate(
   const { userId, supabase } = authResult.data;
 
   try {
+    const timezone = await getUserTimezone(supabase, userId);
     const total = await expenseRepository.getTotalForDate(
       supabase,
       userId,
-      date
+      date,
+      timezone
     );
     return success(total);
   } catch (err) {
@@ -111,11 +131,13 @@ export async function getExpensesByCategory(
   const { userId, supabase } = authResult.data;
 
   try {
+    const timezone = await getUserTimezone(supabase, userId);
     const byCategory = await expenseRepository.getByCategory(
       supabase,
       userId,
       startDate,
-      endDate
+      endDate,
+      timezone
     );
     return success(byCategory);
   } catch (err) {
@@ -136,11 +158,13 @@ export async function getDailyTotals(
   const { userId, supabase } = authResult.data;
 
   try {
-    const dailyTotals = await expenseRepository.getDailyTotals(
+    const timezone = await getUserTimezone(supabase, userId);
+    const dailyTotals = await expenseRepository.getDailyTotalsForDateRange(
       supabase,
       userId,
       startDate,
-      endDate
+      endDate,
+      timezone
     );
     return success(dailyTotals);
   } catch (err) {

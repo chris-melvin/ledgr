@@ -157,7 +157,7 @@ export function PaymentHistoryDialog({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-sm text-stone-500">
-                            {formatDate(payment.payment_date)}
+                            {formatDate(payment.payment_timestamp)}
                           </span>
                           <span className="font-mono font-medium text-stone-800">
                             {currency}{payment.amount.toLocaleString()}

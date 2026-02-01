@@ -2,18 +2,28 @@
 
 import { useMemo, useState } from "react";
 import { X, Plus, Calendar, Clock, CreditCard, Banknote, Receipt, Check } from "lucide-react";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency, formatKey } from "@/lib/utils";
 import { CURRENCY } from "@/lib/constants";
-import type { LocalExpense, LocalBill, LocalIncome, TimelineEvent } from "@/lib/types";
+import type { LocalBill, LocalIncome, TimelineEvent } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import * as dateUtils from "@/lib/utils/date";
+
+// Minimal expense interface that works with both LocalExpense and Expense from database
+interface ExpenseItem {
+  id: string;
+  amount: number;
+  label: string;
+  category?: string | null;
+  occurred_at: string;
+}
 
 interface DayTimelineModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedDate: Date;
-  expenses: LocalExpense[];
+  expenses: ExpenseItem[];
   bills: LocalBill[];
   incomes: LocalIncome[];
   dailyLimit: number;
@@ -85,21 +95,26 @@ export function DayTimelineModal({
   // Build timeline events
   const { timelineEvents, totalSpent, remaining } = useMemo(() => {
     const events: TimelineEvent[] = [];
-    const dateKey = selectedDate.toISOString().split("T")[0];
+    const dateKey = formatKey(selectedDate);
     const dayOfMonth = selectedDate.getDate();
     const month = selectedDate.getMonth();
     const year = selectedDate.getFullYear();
 
     // Add expenses for this day
+    // Filter by occurred_at timestamp
     expenses
-      .filter((e) => e.date.startsWith(dateKey || ""))
+      .filter((e) => {
+        // Use occurred_at (required field) to filter by date
+        const expenseDate = dateUtils.toDateString(e.occurred_at, dateUtils.DEFAULT_TIMEZONE);
+        return expenseDate === dateKey;
+      })
       .forEach((expense) => {
         events.push({
           id: expense.id,
           type: "expense",
           label: expense.label,
           amount: expense.amount,
-          time: new Date(expense.date).toLocaleTimeString("en-US", {
+          time: new Date(expense.occurred_at).toLocaleTimeString("en-US", {
             hour: "numeric",
             minute: "2-digit",
           }),

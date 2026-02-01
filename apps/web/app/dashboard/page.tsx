@@ -5,6 +5,7 @@ import { OnboardingProvider, OnboardingTour } from "@/components/onboarding";
 import { onboardingRepository } from "@/lib/repositories/onboarding.repository";
 import { settingsRepository, budgetBucketRepository, incomeRepository, billRepository } from "@/lib/repositories";
 import type { Expense, UserOnboarding, UserSettings, BudgetBucket, Income, Debt } from "@repo/database";
+import * as dateUtils from "@/lib/utils/date";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -54,20 +55,21 @@ export default async function DashboardPage() {
   }
 
   // Fetch expenses for current month
-  const today = new Date();
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  // Use user's timezone from settings, fallback to UTC
+  const timezone = userSettings?.timezone ?? dateUtils.DEFAULT_TIMEZONE;
+  const currentTimestamp = dateUtils.getCurrentTimestamp(timezone);
 
-  const startDate = startOfMonth.toISOString().split("T")[0];
-  const endDate = endOfMonth.toISOString().split("T")[0];
+  // Get timestamp range for the current month in user's timezone
+  const monthStart = dateUtils.getStartOfMonth(currentTimestamp, timezone);
+  const monthEnd = dateUtils.getEndOfMonth(currentTimestamp, timezone);
 
   const { data, error } = await supabase
     .from("expenses")
     .select("*")
     .eq("user_id", user.id)
-    .gte("date", startDate)
-    .lte("date", endDate)
-    .order("date", { ascending: false })
+    .gte("occurred_at", monthStart)
+    .lte("occurred_at", monthEnd)
+    .order("occurred_at", { ascending: false })
     .order("created_at", { ascending: false });
 
   if (!error && data) {

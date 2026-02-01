@@ -515,7 +515,7 @@ export function useServerBudget({ incomes: initialIncomes, bills: initialBills }
         const serverResult = await recordDebtPaymentAction({
           debt_id: id,
           amount: paymentAmount,
-          payment_timestamp: timestamp,
+          payment_date: dateUtils.toDateString(timestamp, timezone),
           notes,
         });
         if (!serverResult.success) {

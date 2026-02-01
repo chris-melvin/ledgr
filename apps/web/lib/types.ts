@@ -30,14 +30,15 @@ export interface CalendarDay {
   billLabel?: string;
 }
 
-// Local expense type for state management (before Supabase integration)
+// Local expense type for state management
+// Note: Matches Expense type from database with occurred_at as primary timestamp
 export interface LocalExpense {
   id: string;
-  date: string; // ISO string (YYYY-MM-DD)
+  date?: string; // DEPRECATED: Legacy field, use occurred_at instead
   amount: number;
   label: string;
-  category?: string;
-  occurred_at?: string | null; // ISO timestamp when expense occurred
+  category?: string | null; // Can be null from database
+  occurred_at: string; // ISO timestamp when expense occurred (required)
   bucket_id?: string | null; // Budget bucket reference
 }
 

@@ -15,50 +15,51 @@ interface UseTimeframeReturn {
 
 // Get date range for a timeframe with timezone support
 function getDateRangeForTimeframe(timeframe: TimeframeOption, timezone: string): DateRange {
-  const today = dateUtils.startOfDay(new Date(), timezone);
+  const now = new Date();
+  const today = dateUtils.startOfDayInTimezone(now, timezone);
 
   switch (timeframe) {
     case "daily": {
-      const start = dateUtils.startOfDay(today, timezone);
-      const end = dateUtils.endOfDay(today, timezone);
+      const start = dateUtils.startOfDayInTimezone(today, timezone);
+      const end = dateUtils.endOfDayInTimezone(today, timezone);
       return {
         start: start.toISOString(),
         end: end.toISOString(),
       };
     }
     case "weekly": {
-      const startOfWeek = dateUtils.startOfWeek(today, timezone);
-      const endOfDay = dateUtils.endOfDay(today, timezone);
+      const weekStart = dateUtils.startOfWeekInTimezone(today, timezone);
+      const dayEnd = dateUtils.endOfDayInTimezone(today, timezone);
       return {
-        start: startOfWeek.toISOString(),
-        end: endOfDay.toISOString(),
+        start: weekStart.toISOString(),
+        end: dayEnd.toISOString(),
       };
     }
     case "monthly": {
-      const startOfMonth = dateUtils.startOfMonth(today, timezone);
-      const endOfDay = dateUtils.endOfDay(today, timezone);
+      const monthStart = dateUtils.startOfMonthInTimezone(today, timezone);
+      const dayEnd = dateUtils.endOfDayInTimezone(today, timezone);
       return {
-        start: startOfMonth.toISOString(),
-        end: endOfDay.toISOString(),
+        start: monthStart.toISOString(),
+        end: dayEnd.toISOString(),
       };
     }
     case "yearly": {
-      const startOfYear = dateUtils.startOfYear(today, timezone);
-      const endOfDay = dateUtils.endOfDay(today, timezone);
+      const yearStart = dateUtils.startOfYearInTimezone(today, timezone);
+      const dayEnd = dateUtils.endOfDayInTimezone(today, timezone);
       return {
-        start: startOfYear.toISOString(),
-        end: endOfDay.toISOString(),
+        start: yearStart.toISOString(),
+        end: dayEnd.toISOString(),
       };
     }
     case "all":
     default: {
       // Last 2 years by default for "all"
-      const twoYearsAgo = dateUtils.addYears(today, -2, timezone);
-      const start = dateUtils.startOfDay(twoYearsAgo, timezone);
-      const endOfDay = dateUtils.endOfDay(today, timezone);
+      const twoYearsAgo = dateUtils.addYearsToDate(today, -2, timezone);
+      const start = dateUtils.startOfDayInTimezone(twoYearsAgo, timezone);
+      const dayEnd = dateUtils.endOfDayInTimezone(today, timezone);
       return {
         start: start.toISOString(),
-        end: endOfDay.toISOString(),
+        end: dayEnd.toISOString(),
       };
     }
   }

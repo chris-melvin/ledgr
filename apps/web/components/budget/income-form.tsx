@@ -38,8 +38,11 @@ export function IncomeForm({ open, onClose, income, currency, onSave }: IncomeFo
 
   const [label, setLabel] = useState(income?.label ?? "");
   const [amount, setAmount] = useState(income?.amount?.toString() ?? "");
-  type Frequency = "weekly" | "biweekly" | "monthly" | "quarterly" | "yearly" | "once";
-  const [frequency, setFrequency] = useState<Frequency>(income?.frequency ?? "monthly");
+  // Include "daily" for compatibility with database type, though UI doesn't expose it
+  type Frequency = "daily" | "weekly" | "biweekly" | "monthly" | "quarterly" | "yearly" | "once";
+  // Default to monthly, and convert "daily" to "monthly" for UI display since daily income is rare
+  const initialFrequency = income?.frequency === "daily" ? "monthly" : (income?.frequency ?? "monthly");
+  const [frequency, setFrequency] = useState<Frequency>(initialFrequency as Frequency);
   const [dayOfMonth, setDayOfMonth] = useState(
     income?.day_of_month?.toString() ?? ""
   );
@@ -82,7 +85,8 @@ export function IncomeForm({ open, onClose, income, currency, onSave }: IncomeFo
   const handleClose = () => {
     setLabel(income?.label ?? "");
     setAmount(income?.amount?.toString() ?? "");
-    setFrequency(income?.frequency ?? "monthly");
+    const resetFrequency = income?.frequency === "daily" ? "monthly" : (income?.frequency ?? "monthly");
+    setFrequency(resetFrequency as Frequency);
     setDayOfMonth(income?.day_of_month?.toString() ?? "");
     onClose();
   };
@@ -91,7 +95,8 @@ export function IncomeForm({ open, onClose, income, currency, onSave }: IncomeFo
   if (open && income && label !== income.label) {
     setLabel(income.label);
     setAmount(income.amount.toString());
-    setFrequency(income.frequency);
+    const editFrequency = income.frequency === "daily" ? "monthly" : income.frequency;
+    setFrequency(editFrequency as Frequency);
     setDayOfMonth(income.day_of_month?.toString() ?? "");
   }
 

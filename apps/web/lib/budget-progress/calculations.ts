@@ -5,6 +5,7 @@
  * monthly progress, and generating positive messaging.
  */
 
+import { format } from "date-fns";
 import type {
   DailyBudgetStatus,
   WeeklyProgress,
@@ -40,8 +41,7 @@ export function getWeekEnd(date: Date, weekStartsOn = 1): Date {
  * Format date to YYYY-MM-DD string
  */
 export function formatDateKey(date: Date): string {
-  const isoString = date.toISOString();
-  return isoString.slice(0, 10);
+  return format(date, "yyyy-MM-dd");
 }
 
 /**

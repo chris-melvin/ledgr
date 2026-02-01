@@ -25,6 +25,7 @@ import {
 import { createBill } from "@/actions/bills";
 import type { CreateBillInput } from "@/lib/validations/bill.schema";
 import { cn } from "@/lib/utils";
+import * as dateUtils from "@/lib/utils/date";
 
 const DEBT_ICONS = ["💳", "💰", "🏠", "🚗", "🏦", "📱", "💸", "🎓"];
 
@@ -134,9 +135,14 @@ export function DebtQuickForm({ open, onClose, currency, onSave }: DebtQuickForm
 
   // Calculate end date from months remaining
   const calculateEndDate = (months: number): string => {
-    const now = new Date();
-    const endDate = new Date(now.getFullYear(), now.getMonth() + months, 1);
-    return endDate.toISOString().split("T")[0] ?? "";
+    const currentTimestamp = dateUtils.getCurrentTimestamp();
+    // Add months to current date
+    let timestamp = currentTimestamp;
+    for (let i = 0; i < months; i++) {
+      timestamp = dateUtils.addMonthsToTimestamp(timestamp, 1);
+    }
+    // Return as YYYY-MM-DD
+    return dateUtils.toDateString(timestamp);
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,7 +163,7 @@ export function DebtQuickForm({ open, onClose, currency, onSave }: DebtQuickForm
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const today = new Date().toISOString().split("T")[0] ?? null;
+    const today = dateUtils.getCurrentDateString();
 
     let data: CreateBillInput;
 
@@ -174,7 +180,7 @@ export function DebtQuickForm({ open, onClose, currency, onSave }: DebtQuickForm
         label: name.trim(),
         creditor: creditor.trim() || null,
         amount: parsedAmount,
-        due_date: null, // One-time uses end_date instead
+        due_date: null, // One-time uses end_timestamp instead
         icon,
         frequency: "once" as const,
         is_recurring: false,
@@ -185,8 +191,8 @@ export function DebtQuickForm({ open, onClose, currency, onSave }: DebtQuickForm
         remaining_balance: parsedAmount,
         interest_rate: null,
         minimum_payment: null,
-        start_date: today,
-        end_date: dueDate || null,
+        start_timestamp: dateUtils.toStartOfDayTimestamp(today),
+        end_timestamp: dueDate ? dateUtils.toStartOfDayTimestamp(dueDate) : null,
       };
     } else {
       // Recurring debt
@@ -217,8 +223,8 @@ export function DebtQuickForm({ open, onClose, currency, onSave }: DebtQuickForm
         remaining_balance: parsedTotal,
         interest_rate: parsedInterest,
         minimum_payment: parsedAmount,
-        start_date: today,
-        end_date: endDate,
+        start_timestamp: dateUtils.toStartOfDayTimestamp(today),
+        end_timestamp: endDate ? dateUtils.toStartOfDayTimestamp(endDate) : null,
       };
     }
 

@@ -322,14 +322,16 @@ function IncomeCardFull({
   const isReceived = income.status === "received";
   const isOptimistic = income.pending;
 
-  const frequencyLabel = {
+  const frequencyLabel: Record<string, string> = {
+    daily: "/day",
     weekly: "/wk",
     biweekly: "/2wk",
     monthly: "/mo",
     quarterly: "/qtr",
     yearly: "/yr",
     once: "",
-  }[income.frequency];
+  };
+  const displayFrequency = frequencyLabel[income.frequency] ?? "";
 
   return (
     <div
@@ -366,7 +368,7 @@ function IncomeCardFull({
         <div className="flex items-center gap-2">
           <p className="text-sm font-semibold text-emerald-600 tabular-nums">
             +{formatCurrency(income.amount, currency)}
-            <span className="text-xs font-normal text-stone-400">{frequencyLabel}</span>
+            <span className="text-xs font-normal text-stone-400">{displayFrequency}</span>
           </p>
 
           <DropdownMenu>

@@ -2,11 +2,12 @@
 
 import { useMemo, useCallback, useState } from "react";
 import { Calendar, Clock, CreditCard, Banknote, Receipt, Check, CalendarDays, Trash2, ChevronDown, X } from "lucide-react";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency, formatKey } from "@/lib/utils";
 import { CURRENCY } from "@/lib/constants";
 import { CompactSmartInput } from "@/components/expenses/compact-smart-input";
-import type { LocalExpense, LocalBill, LocalIncome, TimelineEvent } from "@/lib/types";
+import type { LocalBill, LocalIncome, TimelineEvent } from "@/lib/types";
 import type { BudgetBucket } from "@repo/database";
+import * as dateUtils from "@/lib/utils/date";
 
 interface ExpensePreview {
   amount: number;
@@ -16,9 +17,19 @@ interface ExpensePreview {
   bucketSlug?: string;
 }
 
+// Minimal expense interface that works with both LocalExpense and Expense from database
+interface ExpenseItem {
+  id: string;
+  amount: number;
+  label: string;
+  category?: string | null;
+  occurred_at: string;
+  bucket_id?: string | null;
+}
+
 interface DayDetailPanelProps {
   selectedDate: Date | null;
-  expenses: LocalExpense[];
+  expenses: ExpenseItem[];
   bills: LocalBill[];
   incomes: LocalIncome[];
   dailyLimit: number;
@@ -149,14 +160,19 @@ export function DayDetailPanel({
     }
 
     const events: TimelineEvent[] = [];
-    const dateKey = selectedDate.toISOString().split("T")[0];
+    const dateKey = formatKey(selectedDate);
     const dayOfMonth = selectedDate.getDate();
     const month = selectedDate.getMonth();
     const year = selectedDate.getFullYear();
 
     // Add expenses for this day
+    // Filter by date field or occurred_at timestamp
     expenses
-      .filter((e) => e.date.startsWith(dateKey || ""))
+      .filter((e) => {
+        // Use occurred_at (required field) to filter by date
+        const expenseDate = dateUtils.toDateString(e.occurred_at, dateUtils.DEFAULT_TIMEZONE);
+        return expenseDate === dateKey;
+      })
       .forEach((expense) => {
         events.push({
           id: expense.id,
@@ -318,7 +334,7 @@ export function DayDetailPanel({
               const config = EVENT_CONFIG[event.type];
               const Icon = config.icon;
               const isEditing = event.type === "expense" && editingExpenseId === event.id;
-              const expense = event.type === "expense" ? (event.originalData as LocalExpense) : null;
+              const expense = event.type === "expense" ? (event.originalData as ExpenseItem) : null;
 
               return (
                 <div

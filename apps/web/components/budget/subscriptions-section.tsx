@@ -261,13 +261,16 @@ function SubscriptionCardCompact({
 }) {
   const isPaid = item.status === "paid";
   const isOptimistic = item.pending;
-  const frequencyLabel = {
+  const frequencyLabels: Record<string, string> = {
+    daily: "/day",
     weekly: "/wk",
     biweekly: "/2wk",
     monthly: "/mo",
+    quarterly: "/qtr",
     yearly: "/yr",
     once: "",
-  }[item.frequency];
+  };
+  const frequencyLabel = frequencyLabels[item.frequency] ?? "";
 
   return (
     <div
@@ -345,13 +348,16 @@ function SubscriptionCardFull({
 }) {
   const isPaid = item.status === "paid";
   const isOptimistic = item.pending;
-  const frequencyLabel = {
+  const frequencyLabels: Record<string, string> = {
+    daily: "/day",
     weekly: "/wk",
     biweekly: "/2wk",
     monthly: "/mo",
+    quarterly: "/qtr",
     yearly: "/yr",
     once: "",
-  }[item.frequency];
+  };
+  const frequencyLabel = frequencyLabels[item.frequency] ?? "";
 
   return (
     <div

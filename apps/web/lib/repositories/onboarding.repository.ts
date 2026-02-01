@@ -5,6 +5,7 @@ import type {
   UserOnboardingUpdate,
   ProgressiveHintState,
 } from "@repo/database";
+import * as dateUtils from "@/lib/utils/date";
 
 /**
  * Repository for user onboarding progress operations
@@ -230,7 +231,7 @@ class OnboardingRepository {
     userId: string
   ): Promise<UserOnboarding> {
     const current = await this.getOrCreate(supabase, userId);
-    const today = new Date().toISOString().split("T")[0];
+    const today = dateUtils.getCurrentDateString();
 
     // Track days active
     let daysActive = current.days_active;

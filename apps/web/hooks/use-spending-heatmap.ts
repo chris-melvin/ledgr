@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { useTimezone } from "@/components/providers";
 import * as dateUtils from "@/lib/utils/date";
-import type { Expense } from "@repo/database";
 import type { HeatmapCell, DateRange } from "@/lib/types";
 
 // Get ISO week number
@@ -15,8 +14,14 @@ function getWeekNumber(date: Date): number {
   return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
+// Minimal expense interface for heatmap calculations
+interface ExpenseForHeatmap {
+  occurred_at: string;
+  amount: number;
+}
+
 interface UseSpendingHeatmapProps {
-  expenses: Expense[];
+  expenses: ExpenseForHeatmap[];
   dateRange: DateRange;
 }
 
