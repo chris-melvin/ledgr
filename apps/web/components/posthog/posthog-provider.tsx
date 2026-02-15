@@ -5,7 +5,10 @@ import { PostHogProvider as PHProvider } from "posthog-js/react";
 import { useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
-if (typeof window !== "undefined") {
+if (
+  typeof window !== "undefined" &&
+  process.env.NODE_ENV === "production"
+) {
   const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
@@ -14,19 +17,12 @@ if (typeof window !== "undefined") {
       api_host: "/ingest",
       ui_host: posthogHost,
       person_profiles: "identified_only",
-      capture_pageview: false, // We'll capture pageviews manually
+      capture_pageview: false,
       capture_pageleave: true,
-      // Enables capturing unhandled exceptions via Error Tracking
       capture_exceptions: true,
-      // Turn on debug in development mode
-      debug: process.env.NODE_ENV === "development",
-      // Disable session recording to prevent 431 errors from large headers
       disable_session_recording: true,
-      // Disable surveys to reduce header size
       disable_surveys: true,
-      // Reduce autocapture to prevent large payloads
       autocapture: false,
-      // Limit property size to prevent 431 errors
       properties_string_max_length: 1000,
     });
   }

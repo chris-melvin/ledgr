@@ -20,7 +20,7 @@ export interface UnknownShortcut {
 }
 
 interface UseAiParserOptions {
-  onSuccess?: (expenses: ParsedExpense[]) => void;
+  onSuccess?: (expenses: ParsedExpense[]) => void | Promise<void>;
   onError?: (error: Error) => void;
   onUnknownShortcut?: (shortcut: UnknownShortcut) => void;
   shortcuts?: CustomShortcut[];
@@ -486,7 +486,7 @@ Examples:
         bucketId: expense.bucketId ?? defaultBucket?.id,
         bucketSlug: expense.bucketSlug ?? defaultBucket?.slug,
       }));
-      onSuccess?.(withDefaults);
+      await onSuccess?.(withDefaults);
       setPreview([]);
     }
     return results;

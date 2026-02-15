@@ -460,7 +460,7 @@ function InteractiveDemo() {
                   <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">
                     Today you can spend
                   </p>
-                  <p className="text-6xl font-light text-neutral-900 tabular-nums animate-count-up">
+                  <p className="text-6xl font-light text-neutral-900 tabular-nums animate-landing-count-up">
                     <span className="text-3xl text-emerald-600">₱</span>500
                   </p>
                   <div className="inline-flex items-center gap-1.5 mt-4 bg-emerald-50 rounded-full px-4 py-1.5 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
@@ -960,133 +960,6 @@ function FinalCTA() {
 export default function LandingPage() {
   return (
     <div className="overflow-hidden">
-      {/* Global styles for animations and textures */}
-      <style jsx global>{`
-        @keyframes draw-line {
-          to { stroke-dashoffset: 0; }
-        }
-        @keyframes draw-circle {
-          from { stroke-dashoffset: 300; }
-          to { stroke-dashoffset: 0; }
-        }
-        @keyframes draw-ring {
-          from { stroke-dashoffset: 283; }
-          to { stroke-dashoffset: 85; }
-        }
-        @keyframes fade-in-up {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slide-in-right {
-          from { opacity: 0; transform: translateX(-20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes blink {
-          0%, 50% { opacity: 1; }
-          51%, 100% { opacity: 0; }
-        }
-        @keyframes progress-bar {
-          from { width: 0; }
-          to { width: 100%; }
-        }
-        @keyframes count-up {
-          from { opacity: 0; transform: scale(0.8); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        @keyframes bounce-subtle {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-4px); }
-        }
-        @keyframes ring-fill {
-          from { stroke-dashoffset: 264; }
-          to { stroke-dashoffset: 79; }
-        }
-        @keyframes shuffle {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          25% { transform: translateY(-4px) rotate(-5deg); }
-          75% { transform: translateY(2px) rotate(3deg); }
-        }
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes typing {
-          from { width: 0; }
-          to { width: 10ch; }
-        }
-
-        .animate-draw-line {
-          animation: draw-line 1s ease-out 0.5s forwards;
-        }
-        .animate-draw-line-delayed {
-          animation: draw-line 1s ease-out 1s forwards;
-        }
-        .animate-draw-circle {
-          animation: draw-circle 1.5s ease-out forwards;
-        }
-        .animate-draw-ring {
-          animation: draw-ring 1.5s ease-out forwards;
-        }
-        .animate-fade-in {
-          animation: fade-in-up 0.5s ease-out forwards;
-        }
-        .animate-fade-in-up {
-          animation: fade-in-up 0.5s ease-out both;
-        }
-        .animate-slide-in-right {
-          animation: slide-in-right 0.4s ease-out forwards;
-        }
-        .animate-blink {
-          animation: blink 1s step-end infinite;
-        }
-        .animate-progress-bar {
-          animation: progress-bar 5s linear forwards;
-        }
-        .animate-count-up {
-          animation: count-up 0.6s ease-out forwards;
-        }
-        .animate-bounce-subtle {
-          animation: bounce-subtle 2s ease-in-out infinite;
-        }
-        .animate-ring-fill {
-          animation: ring-fill 1.5s ease-out forwards;
-        }
-        .animate-shuffle {
-          animation: shuffle 0.5s ease-in-out;
-        }
-        .animate-spin-slow {
-          animation: spin-slow 3s linear infinite;
-        }
-        .animate-typing {
-          animation: typing 1s steps(10) forwards;
-        }
-
-        .bg-grid-pattern {
-          background-image:
-            linear-gradient(#e5e5e5 1px, transparent 1px),
-            linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
-          background-size: 20px 20px;
-        }
-
-        .bg-paper-texture {
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
-          opacity: 0.03;
-        }
-
-        .font-handwriting {
-          font-family: 'Comic Sans MS', 'Chalkboard', cursive;
-          font-style: italic;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-          }
-        }
-      `}</style>
-
       {/* Hero Section */}
       <section className="relative px-6 pb-20 pt-16 md:pb-28 md:pt-20">
         <div className="absolute inset-0 -z-10">

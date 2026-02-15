@@ -9,6 +9,7 @@ export type {
   AssetType,
   LiabilityType,
   SavingsTransactionType,
+  TrackingMode,
 } from "./types/database.js";
 
 // Core entity types

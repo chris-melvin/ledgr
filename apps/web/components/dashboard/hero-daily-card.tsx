@@ -25,6 +25,7 @@ interface HeroDailyCardProps {
   expenses?: ExpenseItem[];
   date?: Date;
   timezone?: string;
+  isBudgetMode?: boolean;
 }
 
 type BudgetStatus = "safe" | "close" | "low" | "over";
@@ -43,6 +44,9 @@ const STATUS_SHADER_COLORS: Record<BudgetStatus, string[]> = {
   low: ["#ffedd5", "#fed7aa", "#fdba74", "#fb923c"],
   over: ["#ffe4e6", "#fecdd3", "#fda4af", "#fb7185"],
 };
+
+const NEUTRAL_SHADER_COLORS = ["#f5f5f4", "#e7e5e4", "#d6d3d1", "#a8a29e"];
+const NEUTRAL_CSS_GRADIENT = "linear-gradient(135deg, #fafaf9 0%, #f5f5f4 50%, #e7e5e4 100%)";
 
 const STATUS_CSS_GRADIENTS: Record<BudgetStatus, string> = {
   safe: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #a7f3d0 100%)",
@@ -157,6 +161,7 @@ export function HeroDailyCard({
   expenses = [],
   date,
   timezone,
+  isBudgetMode = false,
 }: HeroDailyCardProps) {
   const status = useMemo(() => getBudgetStatus(remaining, limit), [remaining, limit]);
   const config = STATUS_CONFIG[status];
@@ -204,11 +209,11 @@ export function HeroDailyCard({
         {enabled ? (
           <Suspense
             fallback={
-              <div className="w-full h-full" style={{ background: STATUS_CSS_GRADIENTS[status] }} />
+              <div className="w-full h-full" style={{ background: isBudgetMode ? STATUS_CSS_GRADIENTS[status] : NEUTRAL_CSS_GRADIENT }} />
             }
           >
             <MeshGradient
-              colors={STATUS_SHADER_COLORS[status]}
+              colors={isBudgetMode ? STATUS_SHADER_COLORS[status] : NEUTRAL_SHADER_COLORS}
               speed={speed}
               distortion={0.25}
               swirl={0.1}
@@ -218,7 +223,7 @@ export function HeroDailyCard({
             />
           </Suspense>
         ) : (
-          <div className="w-full h-full" style={{ background: STATUS_CSS_GRADIENTS[status] }} />
+          <div className="w-full h-full" style={{ background: isBudgetMode ? STATUS_CSS_GRADIENTS[status] : NEUTRAL_CSS_GRADIENT }} />
         )}
       </div>
 
@@ -231,64 +236,81 @@ export function HeroDailyCard({
             </p>
             <h2 className="text-sm sm:text-base text-neutral-600 font-medium">{dateDisplay}</h2>
           </div>
-          <div
-            className={cn(
-              "animate-in fade-in zoom-in duration-500 delay-100",
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-full",
-              config.accentBg
-            )}
-          >
-            <StatusIcon className={cn("w-3.5 h-3.5", config.iconColor)} />
-            <span className={cn("text-xs font-medium", config.textColor)}>{config.label}</span>
-          </div>
+          {isBudgetMode && (
+            <div
+              className={cn(
+                "animate-in fade-in zoom-in duration-500 delay-100",
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full",
+                config.accentBg
+              )}
+            >
+              <StatusIcon className={cn("w-3.5 h-3.5", config.iconColor)} />
+              <span className={cn("text-xs font-medium", config.textColor)}>{config.label}</span>
+            </div>
+          )}
         </div>
 
-        {/* Main content area */}
-        <div className="flex items-center gap-6 sm:gap-8 mb-6">
-          <div className="animate-in fade-in zoom-in duration-700 delay-200 flex-shrink-0">
-            <CircularProgress percent={percentRemaining} status={status} />
-          </div>
+        {isBudgetMode ? (
+          <>
+            {/* Budget mode: circular progress + remaining amount */}
+            <div className="flex items-center gap-6 sm:gap-8 mb-6">
+              <div className="animate-in fade-in zoom-in duration-700 delay-200 flex-shrink-0">
+                <CircularProgress percent={percentRemaining} status={status} />
+              </div>
 
-          <div className="animate-in fade-in slide-in-from-right-4 duration-700 delay-300 flex-1 min-w-0">
+              <div className="animate-in fade-in slide-in-from-right-4 duration-700 delay-300 flex-1 min-w-0">
+                <div className="mb-1">
+                  <span
+                    className={cn(
+                      "text-4xl sm:text-5xl font-bold tracking-tight",
+                      status === "over" ? "text-rose-600" : "text-neutral-900"
+                    )}
+                  >
+                    {status === "over" && "-"}
+                    {CURRENCY}
+                    <AnimatedNumber value={Math.abs(remaining)} duration={600} />
+                  </span>
+                </div>
+                <p className="text-sm text-neutral-400">
+                  {status === "over" ? (
+                    <>
+                      over your {CURRENCY}
+                      {limit.toLocaleString()} budget
+                    </>
+                  ) : (
+                    <>
+                      remaining of {CURRENCY}
+                      {limit.toLocaleString()}
+                    </>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Insight message */}
+            <div
+              className={cn(
+                "animate-in fade-in slide-in-from-bottom-2 duration-500 delay-400",
+                "flex items-center gap-2 px-4 py-3 rounded-2xl mb-4",
+                "bg-white/60 border border-stone-100"
+              )}
+            >
+              <div className={cn("w-1 h-8 rounded-full", config.barColor)} />
+              <p className="text-sm text-neutral-600 font-medium">{config.message}</p>
+            </div>
+          </>
+        ) : (
+          /* Tracking mode: just total spent */
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 mb-6">
             <div className="mb-1">
-              <span
-                className={cn(
-                  "text-4xl sm:text-5xl font-bold tracking-tight",
-                  status === "over" ? "text-rose-600" : "text-neutral-900"
-                )}
-              >
-                {status === "over" && "-"}
+              <span className="text-4xl sm:text-5xl font-bold tracking-tight text-neutral-900">
                 {CURRENCY}
-                <AnimatedNumber value={Math.abs(remaining)} duration={600} />
+                <AnimatedNumber value={spent} duration={600} />
               </span>
             </div>
-            <p className="text-sm text-neutral-400">
-              {status === "over" ? (
-                <>
-                  over your {CURRENCY}
-                  {limit.toLocaleString()} budget
-                </>
-              ) : (
-                <>
-                  remaining of {CURRENCY}
-                  {limit.toLocaleString()}
-                </>
-              )}
-            </p>
+            <p className="text-sm text-neutral-400">spent {dayLabel.toLowerCase()}</p>
           </div>
-        </div>
-
-        {/* Insight message */}
-        <div
-          className={cn(
-            "animate-in fade-in slide-in-from-bottom-2 duration-500 delay-400",
-            "flex items-center gap-2 px-4 py-3 rounded-2xl mb-4",
-            "bg-white/60 border border-stone-100"
-          )}
-        >
-          <div className={cn("w-1 h-8 rounded-full", config.barColor)} />
-          <p className="text-sm text-neutral-600 font-medium">{config.message}</p>
-        </div>
+        )}
 
         {/* Today's expenses */}
         {expenses.length > 0 && (

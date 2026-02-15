@@ -62,7 +62,7 @@ export async function updateExpense(
       validation.data
     );
 
-    revalidatePath("/");
+    revalidatePath("/dashboard");
 
     return success(expense);
   } catch (err) {
@@ -102,7 +102,7 @@ export async function updateExpenseFromData(
   try {
     const expense = await expenseRepository.update(supabase, id, userId, data);
 
-    revalidatePath("/");
+    revalidatePath("/dashboard");
 
     return success(expense);
   } catch (err) {

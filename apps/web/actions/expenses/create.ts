@@ -48,7 +48,7 @@ export async function createExpense(
     });
 
     // 4. Revalidate cache
-    revalidatePath("/");
+    revalidatePath("/dashboard");
 
     return success(expense);
   } catch (err) {
@@ -95,7 +95,7 @@ export async function createExpenseFromData(data: {
       bucket_id: validation.data.bucket_id ?? null,
     });
 
-    revalidatePath("/");
+    revalidatePath("/dashboard");
 
     return success(expense);
   } catch (err) {

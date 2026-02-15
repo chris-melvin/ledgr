@@ -28,7 +28,7 @@ export async function deleteExpense(id: string): Promise<ActionResult<void>> {
   try {
     await expenseRepository.delete(supabase, id, userId);
 
-    revalidatePath("/");
+    revalidatePath("/dashboard");
 
     return success(undefined);
   } catch (err) {
@@ -58,7 +58,7 @@ export async function deleteExpenses(
   try {
     await expenseRepository.deleteMany(supabase, ids, userId);
 
-    revalidatePath("/");
+    revalidatePath("/dashboard");
 
     return success(undefined);
   } catch (err) {

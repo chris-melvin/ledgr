@@ -19,14 +19,15 @@ import { showExpenseDeletedToast } from "@/components/ui/undo-toast";
 import { restoreExpense } from "@/actions/expenses/restore";
 import { formatCurrency, cn } from "@/lib/utils";
 import { DEFAULT_DAILY_LIMIT, CURRENCY } from "@/lib/constants";
-import type { Expense } from "@repo/database";
+import type { Expense, TrackingMode } from "@repo/database";
 
 interface DashboardClientProps {
   initialExpenses: Expense[];
   dailyLimit?: number;
+  trackingMode?: TrackingMode;
 }
 
-export function DashboardClient({ initialExpenses, dailyLimit }: DashboardClientProps) {
+export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "tracking_only" }: DashboardClientProps) {
   const { timezone } = useTimezone();
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const [showSuccessFlash, setShowSuccessFlash] = useState(false);
@@ -35,9 +36,10 @@ export function DashboardClient({ initialExpenses, dailyLimit }: DashboardClient
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
 
   const actualDailyLimit = dailyLimit ?? DEFAULT_DAILY_LIMIT;
+  const isBudgetMode = trackingMode === "budget_enabled";
 
   // Server-backed expenses with optimistic updates
-  const { expenses, addExpense, addExpenses, updateExpense, removeExpense, isPending } =
+  const { expenses, addExpenses, updateExpense, removeExpense } =
     useServerExpenses(initialExpenses);
 
   const { shortcuts } = useShortcuts();
@@ -78,7 +80,8 @@ export function DashboardClient({ initialExpenses, dailyLimit }: DashboardClient
       const timestamp = isToday
         ? dateUtils.getCurrentTimestamp(timezone)
         : dateUtils.toTimestamp(selectedDate, timezone);
-      await addExpenses(parsedExpenses, timestamp);
+      const result = await addExpenses(parsedExpenses, timestamp);
+      if (!result.success) return; // error toast already shown by hook
 
       const firstExpense = parsedExpenses[0];
       setSuccessMessage(
@@ -125,9 +128,21 @@ export function DashboardClient({ initialExpenses, dailyLimit }: DashboardClient
   }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-[#fafaf9]">
+    <div className="h-screen flex flex-col bg-[#FDFBF7]">
+      {/* Graph paper grid overlay */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-40"
+        style={{
+          backgroundImage: `
+            linear-gradient(#E7E7E4 1px, transparent 1px),
+            linear-gradient(90deg, #E7E7E4 1px, transparent 1px)
+          `,
+          backgroundSize: "20px 20px",
+        }}
+      />
+
       {/* Header */}
-      <header className="flex-shrink-0 h-14 sm:h-12 px-3 sm:px-4 flex items-center justify-between border-b border-neutral-200/60 bg-white/80 backdrop-blur-sm safe-area-top">
+      <header className="relative flex-shrink-0 h-14 sm:h-12 px-3 sm:px-4 flex items-center justify-between border-b border-neutral-200 bg-white/80 backdrop-blur-sm safe-area-top">
         <span className="text-base font-bold text-neutral-800 tracking-tight">margin</span>
 
         <div className="flex items-center gap-1 sm:gap-2">
@@ -149,7 +164,7 @@ export function DashboardClient({ initialExpenses, dailyLimit }: DashboardClient
       </header>
 
       {/* Scrollable Main Content */}
-      <main className="flex-1 overflow-auto pb-24">
+      <main className="relative flex-1 overflow-auto pb-24">
         <div className="max-w-lg mx-auto p-3 sm:p-4 space-y-4">
           {/* Week Strip */}
           <WeekStrip
@@ -169,17 +184,18 @@ export function DashboardClient({ initialExpenses, dailyLimit }: DashboardClient
             expenses={heroExpenses}
             date={selectedDate}
             timezone={timezone}
+            isBudgetMode={isBudgetMode}
           />
 
           {/* Expense List Card */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-neutral-200/60 overflow-hidden">
+          <div className="bg-white rounded-2xl border border-neutral-200 shadow-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-neutral-100 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-neutral-800">
+              <h3 className="text-sm font-semibold text-neutral-900">
                 {isToday ? "Today\u2019s Transactions" : "Transactions"}
               </h3>
               <span className="text-xs text-neutral-400">{selectedDayExpenses.length} total</span>
             </div>
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-neutral-100">
               {selectedDayExpenses.length === 0 ? (
                 <div className="p-6 text-center">
                   <p className="text-neutral-400 text-sm">
@@ -203,11 +219,11 @@ export function DashboardClient({ initialExpenses, dailyLimit }: DashboardClient
                             {expense.label}
                           </p>
                           <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-[10px] text-neutral-400">{time}</span>
+                            <span className="text-[10px] text-neutral-500">{time}</span>
                             {expense.category && (
                               <button
                                 onClick={() => setEditingExpenseId(isEditing ? null : expense.id)}
-                                className="text-[9px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-500 hover:bg-stone-200 transition-colors"
+                                className="text-[9px] px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600 hover:bg-neutral-200 transition-colors"
                               >
                                 {expense.category}
                               </button>
@@ -231,7 +247,7 @@ export function DashboardClient({ initialExpenses, dailyLimit }: DashboardClient
                         {/* Delete */}
                         <button
                           onClick={() => handleDeleteExpense(expense.id)}
-                          className="p-1.5 text-neutral-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
+                          className="p-1.5 text-neutral-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
                           aria-label="Delete expense"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -240,9 +256,9 @@ export function DashboardClient({ initialExpenses, dailyLimit }: DashboardClient
 
                       {/* Inline category editor */}
                       {isEditing && (
-                        <div className="px-4 pb-3 pt-0 border-t border-stone-100">
+                        <div className="px-4 pb-3 pt-0 border-t border-neutral-100">
                           <div className="pt-2">
-                            <label className="text-[10px] font-medium text-stone-500 uppercase tracking-wider block mb-1">
+                            <label className="text-[10px] font-medium text-neutral-700 uppercase tracking-wider block mb-1">
                               Category
                             </label>
                             <div className="relative">
@@ -252,7 +268,7 @@ export function DashboardClient({ initialExpenses, dailyLimit }: DashboardClient
                                   updateExpense(expense.id, { category: e.target.value || null });
                                   setEditingExpenseId(null);
                                 }}
-                                className="w-full text-sm bg-white border border-stone-200 rounded-lg px-3 py-2 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
+                                className="w-full text-sm bg-white border border-neutral-200 rounded-lg px-3 py-2 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                               >
                                 <option value="">No category</option>
                                 {existingCategories.map((cat) => (
@@ -261,7 +277,7 @@ export function DashboardClient({ initialExpenses, dailyLimit }: DashboardClient
                                   </option>
                                 ))}
                               </select>
-                              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+                              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
                             </div>
                           </div>
                         </div>

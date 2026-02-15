@@ -18,7 +18,7 @@ interface SmartInputBarProps {
   preview: ExpensePreview[];
   isParsing: boolean;
   onInputChange: (value: string) => void;
-  onSubmit: (value: string) => void;
+  onSubmit: (value: string) => Promise<unknown>;
   onPreviewUpdate?: (index: number, updates: Partial<ExpensePreview>) => void;
 }
 
@@ -106,10 +106,15 @@ export function SmartInputBar({
 
   const handleSubmit = useCallback(() => {
     if (!value.trim() || isParsing) return;
-    onSubmit(value);
+    const input = value;
+    // Close UI immediately (optimistic)
     setValue("");
     setIsExpanded(false);
     setIsDesktopModalOpen(false);
+    // Fire async chain in background — catch prevents unhandled rejection
+    Promise.resolve(onSubmit(input)).catch((err) => {
+      console.error("[SmartInputBar] Submit failed:", err);
+    });
   }, [value, isParsing, onSubmit]);
 
   const handleKeyDown = useCallback(

@@ -56,6 +56,7 @@ export default async function DashboardPage() {
       <DashboardClient
         initialExpenses={expenses}
         dailyLimit={userSettings?.default_daily_limit}
+        trackingMode={userSettings?.tracking_mode ?? "tracking_only"}
       />
     </TimezoneProvider>
   );
