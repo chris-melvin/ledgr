@@ -35,6 +35,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-spring/web": "^10.0.3",
     "@repo/database": "workspace:*",
+    "@repo/shared": "workspace:*",
     "@repo/ui": "workspace:*",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
