@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Refund Policy - useMargin",
+  title: "Refund Policy - ledgr",
   description:
-    "Our straightforward refund policy for useMargin Pro subscriptions. 14-day money-back guarantee.",
+    "Our straightforward refund policy for ledgr Pro subscriptions. 14-day money-back guarantee.",
   robots: "index, follow",
 };
 
@@ -26,14 +26,14 @@ export default function RefundPage() {
         <div className="prose prose-stone max-w-none">
           <h2>Our Commitment</h2>
           <p>
-            We want you to be completely satisfied with useMargin. If you're not happy with your Pro
+            We want you to be completely satisfied with ledgr. If you're not happy with your Pro
             subscription, we offer a straightforward refund policy to ensure you feel confident
             trying our Service.
           </p>
 
           <h2>14-Day Money-Back Guarantee</h2>
           <p>
-            If you upgrade to useMargin Pro and decide it's not the right fit for you, we'll refund
+            If you upgrade to ledgr Pro and decide it's not the right fit for you, we'll refund
             your full payment if you request it within <strong>14 days</strong> of your initial
             purchase.
           </p>
@@ -46,7 +46,7 @@ export default function RefundPage() {
           <h2>Free Tier</h2>
           <p>
             The Free tier is always free—no payment required, so no refunds needed! You can use
-            useMargin's Free tier indefinitely at no cost. There are no trials or hidden charges.
+            ledgr's Free tier indefinitely at no cost. There are no trials or hidden charges.
           </p>
 
           <h2>Pro Subscription Refunds</h2>
@@ -58,7 +58,7 @@ export default function RefundPage() {
             </p>
           </div>
           <p>
-            When you first subscribe to useMargin Pro (₱250/month or ₱2,500/year), you have 14 days
+            When you first subscribe to ledgr Pro (₱250/month or ₱2,500/year), you have 14 days
             to try all Pro features risk-free. If you're not satisfied, we'll refund your entire
             payment—no questions asked.
           </p>
@@ -82,8 +82,8 @@ export default function RefundPage() {
           <ol>
             <li>
               Email us at{" "}
-              <a href="mailto:hello@usemargin.app" className="text-teal-600 hover:text-teal-700">
-                hello@usemargin.app
+              <a href="mailto:hello@ledgr.ink" className="text-teal-600 hover:text-teal-700">
+                hello@ledgr.ink
               </a>
             </li>
             <li>
@@ -144,7 +144,7 @@ export default function RefundPage() {
           <h3>How to Cancel Your Subscription</h3>
           <p>You can cancel your Pro subscription at any time:</p>
           <ol>
-            <li>Go to your Account Settings in the useMargin app</li>
+            <li>Go to your Account Settings in the ledgr app</li>
             <li>Navigate to the Subscription section</li>
             <li>Click "Cancel Subscription"</li>
             <li>Confirm your cancellation</li>
@@ -185,7 +185,7 @@ export default function RefundPage() {
           <p>
             If you're outside the 14-day refund window but experiencing issues with the Service,
             please contact us at{" "}
-            <a href="mailto:hello@usemargin.app">hello@usemargin.app</a>. We're happy to help
+            <a href="mailto:hello@ledgr.ink">hello@ledgr.ink</a>. We're happy to help
             troubleshoot or discuss your concerns.
           </p>
 
@@ -200,8 +200,8 @@ export default function RefundPage() {
           </p>
           <ul>
             <li>
-              <strong>useMargin Support:</strong>{" "}
-              <a href="mailto:hello@usemargin.app">hello@usemargin.app</a>
+              <strong>ledgr Support:</strong>{" "}
+              <a href="mailto:hello@ledgr.ink">hello@ledgr.ink</a>
             </li>
             <li>
               <strong>Department of Trade and Industry (DTI):</strong>
@@ -246,7 +246,7 @@ export default function RefundPage() {
           <p>
             If you don't see your refund after 10 business days, please check with your bank first,
             then contact us at{" "}
-            <a href="mailto:hello@usemargin.app">hello@usemargin.app</a> for assistance.
+            <a href="mailto:hello@ledgr.ink">hello@ledgr.ink</a> for assistance.
           </p>
 
           <h2>Partial Refunds</h2>
@@ -268,15 +268,15 @@ export default function RefundPage() {
           </p>
           <p>
             <strong>Email:</strong>{" "}
-            <a href="mailto:hello@usemargin.app" className="text-teal-600 hover:text-teal-700">
-              hello@usemargin.app
+            <a href="mailto:hello@ledgr.ink" className="text-teal-600 hover:text-teal-700">
+              hello@ledgr.ink
             </a>
             <br />
             <strong>Response Time:</strong> We typically respond within 24 hours
           </p>
           <p>
             We value your feedback and want to ensure you have the best experience possible with
-            useMargin.
+            ledgr.
           </p>
 
           <hr />

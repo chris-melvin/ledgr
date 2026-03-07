@@ -18,7 +18,7 @@ export function DayStatus({ remaining }: DayStatusProps) {
     <header className="w-full max-w-6xl flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
       <div>
         <h1 className="text-3xl font-light tracking-tight text-stone-900 mb-1">
-          usemargin
+          ledgr
         </h1>
         <p className="text-stone-400 text-sm uppercase tracking-widest flex items-center gap-2">
           <Zap className="h-3.5 w-3.5 text-amber-500" />

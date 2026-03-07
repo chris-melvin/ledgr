@@ -5,7 +5,7 @@ import { useTimezone } from "@/components/providers";
 import * as dateUtils from "@/lib/utils/date";
 import type { LocalBill } from "@/lib/types";
 
-const STORAGE_KEY = "usemargin_bills";
+const STORAGE_KEY = "ledgr_bills";
 
 // Load bills from localStorage
 function loadBills(): LocalBill[] {

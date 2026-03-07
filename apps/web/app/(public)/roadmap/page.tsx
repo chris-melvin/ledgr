@@ -5,7 +5,7 @@ import { getOptionalAuth } from "@/lib/action-utils";
 import { RoadmapPageClient } from "./roadmap-client";
 
 export const metadata = {
-  title: "Roadmap | useMargin",
+  title: "Roadmap | ledgr",
   description: "See what we're working on and vote for features you want.",
 };
 
@@ -46,7 +46,7 @@ export default function RoadmapPage() {
             Product Roadmap
           </h1>
           <p className="mt-4 text-lg text-stone-600 max-w-2xl mx-auto">
-            See what we're building and help shape the future of useMargin.
+            See what we're building and help shape the future of ledgr.
             Vote for features you want to see prioritized.
           </p>
         </div>

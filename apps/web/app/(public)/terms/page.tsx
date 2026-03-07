@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms of Service - useMargin",
+  title: "Terms of Service - ledgr",
   description:
-    "Terms and conditions for using useMargin, the daily budgeting app for Filipinos.",
+    "Terms and conditions for using ledgr, the daily budgeting app for Filipinos.",
   robots: "index, follow",
 };
 
@@ -26,7 +26,7 @@ export default function TermsPage() {
         <div className="prose prose-stone max-w-none">
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing or using useMargin (the "Service"), you agree to be bound by these Terms of
+            By accessing or using ledgr (the "Service"), you agree to be bound by these Terms of
             Service ("Terms") and our{" "}
             <Link href="/privacy" className="text-teal-600 hover:text-teal-700">
               Privacy Policy
@@ -35,13 +35,13 @@ export default function TermsPage() {
           </p>
           <p>
             You must be at least 18 years old and capable of forming a binding contract under the
-            laws of the Republic of the Philippines to use useMargin. By using the Service, you
+            laws of the Republic of the Philippines to use ledgr. By using the Service, you
             represent and warrant that you meet these requirements.
           </p>
 
           <h2>2. Description of Service</h2>
           <p>
-            useMargin is a daily budgeting application designed to help you manage your finances
+            ledgr is a daily budgeting application designed to help you manage your finances
             with clarity and freedom. The Service provides:
           </p>
           <ul>
@@ -76,7 +76,7 @@ export default function TermsPage() {
 
           <h2>3. User Accounts</h2>
           <p>
-            To use useMargin, you must create an account using Google OAuth. You agree to:
+            To use ledgr, you must create an account using Google OAuth. You agree to:
           </p>
           <ul>
             <li>Provide accurate and complete information</li>
@@ -143,7 +143,7 @@ export default function TermsPage() {
           </p>
 
           <h2>5. User Responsibilities</h2>
-          <p>When using useMargin, you agree to:</p>
+          <p>When using ledgr, you agree to:</p>
           <ul>
             <li>
               <strong>Provide accurate data:</strong> Enter your expenses, income, and budget
@@ -161,7 +161,7 @@ export default function TermsPage() {
               <strong>Protect your credentials:</strong> Keep your login information confidential
             </li>
             <li>
-              <strong>Understand limitations:</strong> Recognize that useMargin is a tracking tool,
+              <strong>Understand limitations:</strong> Recognize that ledgr is a tracking tool,
               not professional financial advice
             </li>
           </ul>
@@ -180,18 +180,18 @@ export default function TermsPage() {
 
           <h2>6. Intellectual Property</h2>
           <p>
-            useMargin and all related content, features, and functionality are owned by useMargin
+            ledgr and all related content, features, and functionality are owned by ledgr
             and are protected by international copyright, trademark, and other intellectual property
             laws.
           </p>
           <ul>
             <li>
-              <strong>We own the platform:</strong> The useMargin software, design, trademarks, and
+              <strong>We own the platform:</strong> The ledgr software, design, trademarks, and
               related materials belong to us
             </li>
             <li>
               <strong>You own your data:</strong> You retain all rights to the financial data you
-              enter into useMargin
+              enter into ledgr
             </li>
             <li>
               <strong>License to use:</strong> We grant you a limited, non-exclusive,
@@ -206,12 +206,12 @@ export default function TermsPage() {
 
           <h2>7. Disclaimers</h2>
           <p className="border-l-4 border-amber-500 pl-4 my-6 bg-amber-50 p-4 rounded">
-            <strong>IMPORTANT:</strong> useMargin is a budgeting tool, not financial advice.
+            <strong>IMPORTANT:</strong> ledgr is a budgeting tool, not financial advice.
           </p>
           <p>You acknowledge and agree that:</p>
           <ul>
             <li>
-              <strong>Not financial advice:</strong> useMargin does not provide financial, legal, or
+              <strong>Not financial advice:</strong> ledgr does not provide financial, legal, or
               tax advice. We are not licensed financial advisors.
             </li>
             <li>
@@ -221,7 +221,7 @@ export default function TermsPage() {
             </li>
             <li>
               <strong>No guarantees:</strong> We do not guarantee specific financial outcomes,
-              savings, or results from using useMargin.
+              savings, or results from using ledgr.
             </li>
             <li>
               <strong>Seek professional advice:</strong> For personalized financial guidance,
@@ -239,12 +239,12 @@ export default function TermsPage() {
           </p>
           <ul>
             <li>
-              <strong>Service "as is":</strong> useMargin is provided on an "as is" and "as
+              <strong>Service "as is":</strong> ledgr is provided on an "as is" and "as
               available" basis without warranties of any kind, either express or implied.
             </li>
             <li>
               <strong>No liability for decisions:</strong> We are not liable for any financial
-              decisions you make based on information or calculations provided by useMargin.
+              decisions you make based on information or calculations provided by ledgr.
             </li>
             <li>
               <strong>No liability for damages:</strong> We shall not be liable for any indirect,
@@ -265,7 +265,7 @@ export default function TermsPage() {
 
           <h2>9. Indemnification</h2>
           <p>
-            You agree to indemnify, defend, and hold harmless useMargin, its officers, directors,
+            You agree to indemnify, defend, and hold harmless ledgr, its officers, directors,
             employees, and agents from any claims, liabilities, damages, losses, costs, or expenses
             (including reasonable attorney's fees) arising from:
           </p>
@@ -273,7 +273,7 @@ export default function TermsPage() {
             <li>Your use or misuse of the Service</li>
             <li>Your violation of these Terms</li>
             <li>Your violation of any third-party rights</li>
-            <li>Any financial decisions you make based on useMargin</li>
+            <li>Any financial decisions you make based on ledgr</li>
           </ul>
 
           <h2>10. Termination</h2>
@@ -322,7 +322,7 @@ export default function TermsPage() {
           <ol>
             <li>
               <strong>Good faith negotiation:</strong> We encourage you to contact us first at{" "}
-              <a href="mailto:hello@usemargin.app">hello@usemargin.app</a> to resolve any issues
+              <a href="mailto:hello@ledgr.ink">hello@ledgr.ink</a> to resolve any issues
               informally.
             </li>
             <li>
@@ -343,7 +343,7 @@ export default function TermsPage() {
             <li>We may require you to accept the updated Terms to continue using the Service</li>
           </ul>
           <p>
-            Your continued use of useMargin after any changes become effective constitutes your
+            Your continued use of ledgr after any changes become effective constitutes your
             acceptance of the updated Terms.
           </p>
 
@@ -352,7 +352,7 @@ export default function TermsPage() {
           <h3>Entire Agreement</h3>
           <p>
             These Terms, together with our Privacy Policy and Refund Policy, constitute the entire
-            agreement between you and useMargin regarding the Service.
+            agreement between you and ledgr regarding the Service.
           </p>
 
           <h3>Severability</h3>
@@ -381,14 +381,14 @@ export default function TermsPage() {
           </p>
           <p>
             <strong>Email:</strong>{" "}
-            <a href="mailto:hello@usemargin.app">hello@usemargin.app</a>
+            <a href="mailto:hello@ledgr.ink">hello@ledgr.ink</a>
           </p>
           <p>We typically respond to inquiries within 24-48 hours.</p>
 
           <hr />
 
           <p className="text-sm text-stone-500">
-            Thank you for using useMargin. We're here to help you budget with clarity and freedom.
+            Thank you for using ledgr. We're here to help you budget with clarity and freedom.
           </p>
         </div>
       </div>

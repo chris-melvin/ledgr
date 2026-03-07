@@ -47,7 +47,7 @@ function SignUpForm() {
       <div className="space-y-2 text-center">
         <h1 className="text-2xl font-bold text-neutral-900">Create an account</h1>
         <p className="text-sm text-neutral-500">
-          Start tracking your daily spending with useMargin
+          Start tracking your daily spending with ledgr
         </p>
       </div>
 

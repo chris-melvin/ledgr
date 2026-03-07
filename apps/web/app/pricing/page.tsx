@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PricingContent } from "./pricing-content";
 
 export const metadata = {
-  title: "Pricing - useMargin",
+  title: "Pricing - ledgr",
   description: "Simple, transparent pricing. Choose the plan that works for you.",
 };
 

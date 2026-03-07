@@ -1,5 +1,5 @@
 /**
- * Standardized status color system for useMargin
+ * Standardized status color system for ledgr
  *
  * Use these constants instead of hardcoding Tailwind color classes
  * to ensure consistent status indication across the app.

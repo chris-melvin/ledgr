@@ -231,7 +231,7 @@ export const FEATURE_GATES: Record<GatedFeature, FeatureGateConfig> = {
     upgradePrompt: {
       title: "Unlock Analytics",
       description:
-        "Get detailed spending visualizations, cash flow diagrams, and trend analysis with usemargin Pro.",
+        "Get detailed spending visualizations, cash flow diagrams, and trend analysis with ledgr Pro.",
       ctaText: "Upgrade to Pro",
     },
   },

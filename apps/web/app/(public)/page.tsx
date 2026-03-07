@@ -192,7 +192,7 @@ function DailyBudgetMockup() {
 }
 
 // ============================================================================
-// COMPARISON SECTION - Old Way vs useMargin
+// COMPARISON SECTION - Old Way vs ledgr
 // ============================================================================
 
 function ComparisonSection() {
@@ -261,7 +261,7 @@ function ComparisonSection() {
             </div>
           </div>
 
-          {/* The useMargin Way */}
+          {/* The ledgr Way */}
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-br from-emerald-200/50 to-teal-200/50 rounded-2xl blur-sm opacity-75" />
             <div className="relative bg-white rounded-2xl p-6 md:p-8 border border-neutral-200">
@@ -270,7 +270,7 @@ function ComparisonSection() {
               <div className="relative">
                 <div className="flex items-center gap-2 mb-6">
                   <Check className="h-5 w-5 text-emerald-600" />
-                  <h3 className="text-lg font-semibold text-neutral-800">The useMargin Way</h3>
+                  <h3 className="text-lg font-semibold text-neutral-800">The ledgr Way</h3>
                 </div>
 
                 {/* Simple daily view */}
@@ -413,7 +413,7 @@ function InteractiveDemo() {
             See it in action
           </p>
           <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
-            How useMargin works
+            How ledgr works
           </h2>
           <p className="text-lg text-neutral-600 max-w-xl mx-auto">
             Set it up once. Get your answer every day.
@@ -820,7 +820,7 @@ function SocialProof() {
         {/* Before/After */}
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           <div className="text-center p-8 rounded-2xl bg-white border border-neutral-200">
-            <p className="text-sm text-neutral-500 uppercase tracking-wider mb-4">Before useMargin</p>
+            <p className="text-sm text-neutral-500 uppercase tracking-wider mb-4">Before ledgr</p>
             <div className="flex justify-center gap-4 text-4xl mb-4">
               <span className="animate-bounce-subtle">😰</span>
               <span className="animate-bounce-subtle" style={{ animationDelay: "0.1s" }}>❓</span>
@@ -831,7 +831,7 @@ function SocialProof() {
 
           <div className="text-center p-8 rounded-2xl bg-white border border-emerald-200">
             <div className="absolute inset-0 bg-paper-texture opacity-10 rounded-2xl pointer-events-none" />
-            <p className="text-sm text-emerald-600 uppercase tracking-wider mb-4 relative">After useMargin</p>
+            <p className="text-sm text-emerald-600 uppercase tracking-wider mb-4 relative">After ledgr</p>
             <div className="flex justify-center gap-4 text-4xl mb-4 relative">
               <span className="animate-bounce-subtle">😌</span>
               <span className="animate-bounce-subtle" style={{ animationDelay: "0.1s" }}>✅</span>

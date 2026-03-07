@@ -142,7 +142,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
         <DialogHeader>
           <DialogTitle>Send Feedback</DialogTitle>
           <DialogDescription>
-            Help us improve useMargin. Your feedback is valuable to us.
+            Help us improve ledgr. Your feedback is valuable to us.
           </DialogDescription>
         </DialogHeader>
 

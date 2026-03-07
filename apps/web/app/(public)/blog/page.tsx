@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Sparkles } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Blog - useMargin",
+  title: "Blog - ledgr",
   description:
-    "Budgeting tips, financial advice, and product updates from the useMargin team.",
+    "Budgeting tips, financial advice, and product updates from the ledgr team.",
   robots: "index, follow",
 };
 
@@ -20,7 +20,7 @@ export default function BlogPage() {
             <BookOpen className="w-8 h-8 text-amber-600" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-            The useMargin Blog
+            The ledgr Blog
           </h1>
           <p className="mt-4 text-lg text-stone-600 max-w-2xl mx-auto">
             Budgeting tips, financial insights, and product updates coming soon.
@@ -39,7 +39,7 @@ export default function BlogPage() {
           </h2>
           <p className="text-stone-600 mb-8 max-w-xl mx-auto">
             Our blog will feature practical budgeting advice for Filipinos, success stories from
-            useMargin users, product updates, and tips to help you make the most of your daily
+            ledgr users, product updates, and tips to help you make the most of your daily
             allowance.
           </p>
 
@@ -80,7 +80,7 @@ export default function BlogPage() {
                 size="lg"
               >
                 <a
-                  href="https://twitter.com/usemargin"
+                  href="https://twitter.com/ledgr_ink"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -88,7 +88,7 @@ export default function BlogPage() {
                 </a>
               </Button>
               <Button asChild size="lg" className="bg-teal-600 hover:bg-teal-700">
-                <Link href="/signup">Try useMargin Free</Link>
+                <Link href="/signup">Try ledgr Free</Link>
               </Button>
             </div>
           </div>
@@ -99,7 +99,7 @@ export default function BlogPage() {
           <p className="text-stone-600">
             Have questions or want to contribute a guest post?{" "}
             <a
-              href="mailto:hello@usemargin.app"
+              href="mailto:hello@ledgr.ink"
               className="text-teal-600 hover:text-teal-700 font-medium"
             >
               Get in touch

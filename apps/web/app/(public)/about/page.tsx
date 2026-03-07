@@ -3,9 +3,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "About - useMargin",
+  title: "About - ledgr",
   description:
-    "Learn about useMargin's mission to bring daily spending clarity and financial freedom to Filipinos.",
+    "Learn about ledgr's mission to bring daily spending clarity and financial freedom to Filipinos.",
   robots: "index, follow",
 };
 
@@ -19,7 +19,7 @@ export default function AboutPage() {
             Budget with clarity, not restriction
           </h1>
           <p className="mt-6 text-lg text-stone-600 max-w-2xl mx-auto">
-            useMargin is built for Filipinos who want to take control of their finances without the
+            ledgr is built for Filipinos who want to take control of their finances without the
             guilt, complexity, or overwhelm of traditional budgeting.
           </p>
         </div>
@@ -32,7 +32,7 @@ export default function AboutPage() {
             rigid, punishing, and designed for people who already have their finances figured out.
           </p>
           <p>
-            <strong>useMargin is different.</strong> We believe budgeting should give you freedom,
+            <strong>ledgr is different.</strong> We believe budgeting should give you freedom,
             not restriction. Our mission is to give every Filipino one simple number each day:{" "}
             <em>"Here's what you can safely spend today."</em>
           </p>
@@ -55,9 +55,9 @@ export default function AboutPage() {
             it.
           </p>
 
-          <h2>How useMargin Works</h2>
+          <h2>How ledgr Works</h2>
           <p>
-            useMargin takes a different approach: <strong>daily allowance budgeting</strong>.
+            ledgr takes a different approach: <strong>daily allowance budgeting</strong>.
           </p>
           <ol>
             <li>
@@ -83,7 +83,7 @@ export default function AboutPage() {
 
           <h2>Built for Filipinos</h2>
           <p>
-            useMargin was designed specifically for the Philippine market:
+            ledgr was designed specifically for the Philippine market:
           </p>
           <ul>
             <li>
@@ -113,7 +113,7 @@ export default function AboutPage() {
 
           <h3>Auto-Rebalancing</h3>
           <p>
-            Life happens. When you overspend, useMargin automatically adjusts tomorrow's budget. No
+            Life happens. When you overspend, ledgr automatically adjusts tomorrow's budget. No
             guilt, no lectures—just a gentle nudge to balance things out.
           </p>
 
@@ -132,13 +132,13 @@ export default function AboutPage() {
 
           <h3>Income & Bills Tracking</h3>
           <p>
-            Log your salary, side income, and freelance gigs. Mark bills as paid. useMargin factors
+            Log your salary, side income, and freelance gigs. Mark bills as paid. ledgr factors
             everything into your daily allowance automatically.
           </p>
 
           <h3>Debt Snowball</h3>
           <p>
-            Paying off debt? useMargin helps you allocate payments and track progress using the
+            Paying off debt? ledgr helps you allocate payments and track progress using the
             proven debt snowball method.
           </p>
 
@@ -185,7 +185,7 @@ export default function AboutPage() {
 
           <h3>Progress Over Perfection</h3>
           <p>
-            You won't get it right every day, and that's okay. useMargin focuses on trends and
+            You won't get it right every day, and that's okay. ledgr focuses on trends and
             progress, not perfect execution.
           </p>
 
@@ -199,21 +199,20 @@ export default function AboutPage() {
             .
           </p>
 
-          <h2>Why "useMargin"?</h2>
+          <h2>Why "ledgr"?</h2>
           <p>
-            In finance, your "margin" is the buffer between your income and expenses—the breathing
-            room that keeps you afloat. We wanted a name that reflects that space, that freedom,
-            that room to make choices.
+            A ledger is the oldest and most fundamental tool in finance—a record of what comes in
+            and what goes out. We took that timeless concept and modernized it: ledgr is your
+            financial record, simplified.
           </p>
           <p>
-            The aesthetic (paper texture, marginalia, handwritten notes) is inspired by the way
-            people have budgeted for centuries: jotting notes in the margins of ledgers, tracking
-            pennies on scraps of paper. It's analog warmth meets digital simplicity.
+            The name reflects our philosophy: strip away the complexity, keep what matters. No
+            unnecessary vowels, no unnecessary features. Just clarity about your money, every day.
           </p>
 
           <h2>Pricing</h2>
           <p>
-            useMargin has two tiers:
+            ledgr has two tiers:
           </p>
           <ul>
             <li>
@@ -243,18 +242,18 @@ export default function AboutPage() {
           </p>
           <p>
             <strong>Email:</strong>{" "}
-            <a href="mailto:hello@usemargin.app" className="text-teal-600 hover:text-teal-700">
-              hello@usemargin.app
+            <a href="mailto:hello@ledgr.ink" className="text-teal-600 hover:text-teal-700">
+              hello@ledgr.ink
             </a>
             <br />
             <strong>Twitter:</strong>{" "}
             <a
-              href="https://twitter.com/usemargin"
+              href="https://twitter.com/ledgr_ink"
               target="_blank"
               rel="noopener noreferrer"
               className="text-teal-600 hover:text-teal-700"
             >
-              @usemargin
+              @ledgr_ink
             </a>
           </p>
 
@@ -265,7 +264,7 @@ export default function AboutPage() {
               Ready to budget with clarity?
             </h2>
             <p className="text-stone-600 mb-6">
-              Join Filipinos who've found financial freedom with useMargin.
+              Join Filipinos who've found financial freedom with ledgr.
             </p>
             <Button asChild size="lg" className="bg-teal-600 hover:bg-teal-700">
               <Link href="/signup">Start Free Today</Link>

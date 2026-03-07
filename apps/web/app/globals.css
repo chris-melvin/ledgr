@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* =================================================================
-   useMargin Theme - Teal/Ocean + Scholarly Marginalia Aesthetic
+   ledgr Theme - Teal/Ocean + Scholarly Marginalia Aesthetic
    ================================================================= */
 
 /* Brand Colors */
@@ -262,7 +262,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Custom animations for usemargin */
+/* Custom animations for ledgr */
 @keyframes breathe {
   0%, 100% {
     opacity: 1;

@@ -26,7 +26,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "useMargin - Your Daily Spending Companion",
+  title: "ledgr — Your Daily Spending Companion",
   description:
     "Know exactly what you can spend today, every day. Calendar-first budgeting built for freedom, not restriction.",
 };

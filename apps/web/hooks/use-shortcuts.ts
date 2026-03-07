@@ -20,7 +20,7 @@ interface UseShortcutsReturn {
   isValidTrigger: (trigger: string, excludeId?: string) => boolean;
 }
 
-const STORAGE_KEY = "usemargin-shortcuts";
+const STORAGE_KEY = "ledgr-shortcuts";
 
 // Generate unique ID
 function generateId(): string {

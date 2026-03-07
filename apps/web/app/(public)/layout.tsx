@@ -112,7 +112,7 @@ export default function PublicLayout({
                 </li>
                 <li>
                   <a
-                    href="mailto:hello@usemargin.app"
+                    href="mailto:hello@ledgr.ink"
                     className="text-neutral-600 transition-colors hover:text-neutral-900"
                   >
                     Contact
@@ -158,11 +158,11 @@ export default function PublicLayout({
           {/* Bottom Bar */}
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-neutral-200 pt-8 md:flex-row">
             <p className="text-sm text-neutral-400">
-              &copy; {new Date().getFullYear()} useMargin. All rights reserved.
+              &copy; {new Date().getFullYear()} ledgr. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a
-                href="https://twitter.com/usemargin"
+                href="https://twitter.com/ledgr_ink"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-neutral-400 transition-colors hover:text-teal-600"

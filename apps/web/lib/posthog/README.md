@@ -1,6 +1,6 @@
 # PostHog Integration Guide
 
-PostHog is fully integrated into useMargin for comprehensive analytics and feature flagging.
+PostHog is fully integrated into ledgr for comprehensive analytics and feature flagging.
 
 ## Setup Complete ✅
 

@@ -92,7 +92,7 @@ export function GeneralSettings({ userSettings }: GeneralSettingsProps) {
         <CardHeader>
           <CardTitle>Tracking Mode</CardTitle>
           <CardDescription>
-            Choose how you want to use useMargin
+            Choose how you want to use ledgr
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

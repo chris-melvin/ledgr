@@ -47,7 +47,7 @@ function LoginForm() {
       <div className="space-y-2 text-center">
         <h1 className="text-2xl font-bold text-neutral-900">Welcome back</h1>
         <p className="text-sm text-neutral-500">
-          Sign in to your useMargin account
+          Sign in to your ledgr account
         </p>
       </div>
 

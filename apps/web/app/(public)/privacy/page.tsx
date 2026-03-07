@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - useMargin",
+  title: "Privacy Policy - ledgr",
   description:
-    "How useMargin protects your financial data in compliance with the Philippine Data Privacy Act.",
+    "How ledgr protects your financial data in compliance with the Philippine Data Privacy Act.",
   robots: "index, follow",
 };
 
@@ -26,12 +26,12 @@ export default function PrivacyPage() {
         <div className="prose prose-stone max-w-none">
           <h2>Introduction</h2>
           <p>
-            useMargin ("we," "us," or "our") operates the useMargin daily budgeting application
+            ledgr ("we," "us," or "our") operates the ledgr daily budgeting application
             (the "Service"). This Privacy Policy explains how we collect, use, disclose, and protect
             your information when you use our Service.
           </p>
           <p>
-            By using useMargin, you agree to the collection and use of information in accordance
+            By using ledgr, you agree to the collection and use of information in accordance
             with this policy. We are committed to protecting your privacy and complying with the
             Data Privacy Act of 2012 (R.A. 10173) of the Republic of the Philippines.
           </p>
@@ -90,7 +90,7 @@ export default function PrivacyPage() {
             <li>
               <strong>Provide and maintain our Service:</strong> Calculate your daily spending
               limits, track expenses, manage budgets, and deliver the core functionality of
-              useMargin
+              ledgr
             </li>
             <li>
               <strong>Auto-rebalance your budget:</strong> Adjust daily allowances based on your
@@ -155,7 +155,7 @@ export default function PrivacyPage() {
 
           <h2>Third-Party Services</h2>
           <p>
-            useMargin integrates with the following third-party services. Each has its own privacy
+            ledgr integrates with the following third-party services. Each has its own privacy
             policy governing the use of your information:
           </p>
           <table>
@@ -254,7 +254,7 @@ export default function PrivacyPage() {
           </ul>
           <p>
             To exercise any of these rights, please contact us at{" "}
-            <a href="mailto:hello@usemargin.app">hello@usemargin.app</a>. We will respond to your
+            <a href="mailto:hello@ledgr.ink">hello@ledgr.ink</a>. We will respond to your
             request within 30 days.
           </p>
           <p>
@@ -274,7 +274,7 @@ export default function PrivacyPage() {
 
           <h2>Cookies & Tracking</h2>
           <p>
-            useMargin uses cookies and similar tracking technologies to enhance your experience:
+            ledgr uses cookies and similar tracking technologies to enhance your experience:
           </p>
           <ul>
             <li>
@@ -288,7 +288,7 @@ export default function PrivacyPage() {
           </ul>
           <p>
             You can control cookies through your browser settings. Note that disabling essential
-            cookies may affect the functionality of useMargin.
+            cookies may affect the functionality of ledgr.
           </p>
 
           <h2>International Data Transfers</h2>
@@ -301,10 +301,10 @@ export default function PrivacyPage() {
 
           <h2>Children's Privacy</h2>
           <p>
-            useMargin is not intended for users under 18 years of age. We do not knowingly collect
+            ledgr is not intended for users under 18 years of age. We do not knowingly collect
             personal information from children. If you believe we have collected information from a
             minor, please contact us immediately at{" "}
-            <a href="mailto:hello@usemargin.app">hello@usemargin.app</a>.
+            <a href="mailto:hello@ledgr.ink">hello@ledgr.ink</a>.
           </p>
 
           <h2>Data Retention</h2>
@@ -327,7 +327,7 @@ export default function PrivacyPage() {
             <li>Request your acceptance of the updated policy when necessary</li>
           </ul>
           <p>
-            Your continued use of useMargin after any changes constitutes your acceptance of the
+            Your continued use of ledgr after any changes constitutes your acceptance of the
             updated Privacy Policy.
           </p>
 
@@ -338,17 +338,17 @@ export default function PrivacyPage() {
           </p>
           <p>
             <strong>Email:</strong>{" "}
-            <a href="mailto:hello@usemargin.app">hello@usemargin.app</a>
+            <a href="mailto:hello@ledgr.ink">hello@ledgr.ink</a>
             <br />
             <strong>Data Protection Officer:</strong>{" "}
-            <a href="mailto:hello@usemargin.app">hello@usemargin.app</a>
+            <a href="mailto:hello@ledgr.ink">hello@ledgr.ink</a>
           </p>
           <p>We typically respond to inquiries within 24-48 hours.</p>
 
           <hr />
 
           <p className="text-sm text-stone-500">
-            By using useMargin, you acknowledge that you have read and understood this Privacy
+            By using ledgr, you acknowledge that you have read and understood this Privacy
             Policy. For information about our terms of use, please see our{" "}
             <Link href="/terms" className="text-teal-600 hover:text-teal-700">
               Terms of Service
