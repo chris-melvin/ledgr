@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "useMargin",
-    "slug": "usemargin",
+    "name": "ledgr",
+    "slug": "ledgr",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "scheme": "usemargin",
+    "scheme": "ledgr",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.usemargin.app"
+      "bundleIdentifier": "com.ledgr.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +23,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.usemargin.app"
+      "package": "com.ledgr.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -38,7 +38,7 @@ export default function LoginScreen() {
       className="flex-1 bg-white"
     >
       <View className="flex-1 justify-center px-8">
-        <Text className="text-3xl font-bold text-center mb-2">useMargin</Text>
+        <Text className="text-3xl font-bold text-center mb-2">ledgr</Text>
         <Text className="text-base text-gray-500 text-center mb-10">
           Track your daily expenses
         </Text>

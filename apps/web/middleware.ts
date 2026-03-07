@@ -60,7 +60,9 @@ export async function middleware(request: NextRequest) {
     pathname === "/features" ||
     pathname === "/blog" ||
     pathname === "/privacy" ||
-    pathname === "/terms";
+    pathname === "/terms" ||
+    pathname === "/refund" ||
+    pathname === "/roadmap";
 
   // Define public paths that don't require auth
   const isPublicPath =

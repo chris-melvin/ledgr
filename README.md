@@ -1,14 +1,14 @@
-# usemargin
+# ledgr
 
 **Your daily spending companion. Built for freedom, not restriction.**
 
-[usemargin.app](https://usemargin.app)
+[ledgr.ink](https://ledgr.ink)
 
 ---
 
-## What is usemargin?
+## What is ledgr?
 
-A calendar-first financial planner that treats money as a fluid resource. Instead of rigid monthly budgets that punish you for one bad day, usemargin dynamically rebalances your spending across days.
+A calendar-first financial planner that treats money as a fluid resource. Instead of rigid monthly budgets that punish you for one bad day, ledgr dynamically rebalances your spending across days.
 
 **One sentence:** *Know exactly what you can spend today, every day.*
 
@@ -26,7 +26,7 @@ A calendar-first financial planner that treats money as a fluid resource. Instea
 ## Project Structure
 
 ```
-/usemargin
+/ledgr
 ├── apps/
 │   └── web/                 # Next.js frontend
 ├── packages/

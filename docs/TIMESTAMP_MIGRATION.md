@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the complete migration from DATE fields to TIMESTAMPTZ with full timezone support for the usemargin financial planning application.
+This document describes the complete migration from DATE fields to TIMESTAMPTZ with full timezone support for the ledgr financial planning application.
 
 **Status**: In Progress
 **Started**: 2026-02-01

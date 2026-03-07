@@ -1,5 +1,5 @@
 /**
- * usemargin Database Types
+ * ledgr Database Types
  *
  * Manually maintained types that match our Supabase schema.
  * Keep in sync with migrations in /migrations folder.

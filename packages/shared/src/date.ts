@@ -1,7 +1,7 @@
 /**
  * Centralized Date Utilities with Full Timezone Support
  *
- * This module provides timezone-aware date operations for the usemargin application.
+ * This module provides timezone-aware date operations for the ledgr application.
  * All functions handle timezone conversions properly to ensure dates are displayed
  * and stored correctly regardless of the user's timezone.
  *

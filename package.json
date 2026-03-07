@@ -1,5 +1,5 @@
 {
-  "name": "usemargin",
+  "name": "ledgr",
   "private": true,
   "scripts": {
     "build": "turbo run build",

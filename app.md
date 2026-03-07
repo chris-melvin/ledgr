@@ -1,14 +1,14 @@
-# usemargin
+# ledgr
 
 **Your daily spending companion. Built for freedom, not restriction.**
 
-🌐 **Website:** [usemargin.app](https://usemargin.app)
+🌐 **Website:** [ledgr.app](https://ledgr.app)
 
 ---
 
 ## Vision
 
-usemargin is a calendar-first financial planner that treats money as a fluid resource. Instead of rigid monthly budgets that punish you for one bad day, usemargin dynamically rebalances your spending across days—giving you clarity, flexibility, and peace of mind.
+ledgr is a calendar-first financial planner that treats money as a fluid resource. Instead of rigid monthly budgets that punish you for one bad day, ledgr dynamically rebalances your spending across days—giving you clarity, flexibility, and peace of mind.
 
 **One sentence:** *Know exactly what you can spend today, every day.*
 
@@ -16,7 +16,7 @@ usemargin is a calendar-first financial planner that treats money as a fluid res
 
 ## 1. Product Philosophy: "Freedom through Logic"
 
-Most budgeting apps fail because they feel like punishment. usemargin is built on three pillars:
+Most budgeting apps fail because they feel like punishment. ledgr is built on three pillars:
 
 | Pillar | What It Means |
 |--------|---------------|
@@ -26,13 +26,13 @@ Most budgeting apps fail because they feel like punishment. usemargin is built o
 
 ---
 
-## 2. Who Is usemargin For?
+## 2. Who Is ledgr For?
 
-usemargin is designed to serve **anyone who wants a simpler, less stressful relationship with money**—from first-time budgeters to seasoned financial planners.
+ledgr is designed to serve **anyone who wants a simpler, less stressful relationship with money**—from first-time budgeters to seasoned financial planners.
 
 ### Target Segments
 
-| Segment | Pain Point | How usemargin Helps |
+| Segment | Pain Point | How ledgr Helps |
 |---------|------------|---------------------|
 | **Paycheck-to-Paycheck Earners** *(Initial GTM Focus)* | Monthly budgets fail them; they need daily clarity | Daily allowance + auto-rebalancing removes the mental math |
 | **Freelancers & Gig Workers** | Irregular income makes traditional budgets impossible | Flexible income tracking + dynamic daily limits adapt to cash flow |
@@ -69,7 +69,7 @@ usemargin is designed to serve **anyone who wants a simpler, less stressful rela
 ### Recommended Monorepo Structure
 
 ```
-/usemargin
+/ledgr
 ├── /apps
 │   ├── /web              # React Frontend (Next.js)
 │   ├── /mobile           # React Native (future)
@@ -215,9 +215,9 @@ Year 3: Financial Platform
 ├── Tax optimization hints
 
 Year 4+: Financial Ecosystem
-├── usemargin Pay (embedded finance)
-├── usemargin Invest (robo-advisor)
-├── usemargin Business (SME tools)
+├── ledgr Pay (embedded finance)
+├── ledgr Invest (robo-advisor)
+├── ledgr Business (SME tools)
 └── White-label solutions
 ```
 
@@ -244,7 +244,7 @@ Year 4+: Financial Ecosystem
 
 ## 8. Competitive Positioning
 
-| App | Approach | usemargin Differentiator |
+| App | Approach | ledgr Differentiator |
 |-----|----------|-------------------------|
 | **YNAB** | Monthly zero-based budgeting | Daily-first, auto-rebalancing removes manual reconciliation |
 | **Mint** | Passive tracking & alerts | Active daily guidance—"what can I spend TODAY?" |
@@ -253,7 +253,7 @@ Year 4+: Financial Ecosystem
 | **Spreadsheets** | Full control, high friction | Same logic, 100x less friction |
 
 **Positioning Statement:**
-> usemargin is for people who want the intelligence of a spreadsheet with the simplicity of a daily number.
+> ledgr is for people who want the intelligence of a spreadsheet with the simplicity of a daily number.
 
 ---
 
@@ -287,9 +287,9 @@ Year 4+: Financial Ecosystem
 
 ## 11. Summary
 
-**usemargin** is a calendar-first budgeting app that gives users one simple number each day: *what they can safely spend*. 
+**ledgr** is a calendar-first budgeting app that gives users one simple number each day: *what they can safely spend*. 
 
-By starting with paycheck-to-paycheck earners—who experience the highest financial anxiety—and expanding to broader audiences, usemargin can become the default "daily spending companion" for millions.
+By starting with paycheck-to-paycheck earners—who experience the highest financial anxiety—and expanding to broader audiences, ledgr can become the default "daily spending companion" for millions.
 
 **The path forward:**
 1. Nail the core experience (MVP → 1K users)
@@ -302,4 +302,4 @@ By starting with paycheck-to-paycheck earners—who experience the highest finan
 
 *Built with ❤️ for financial freedom.*
 
-**🌐 usemargin.app**
+**🌐 ledgr.app**

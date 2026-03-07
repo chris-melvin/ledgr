@@ -30,7 +30,7 @@ function AuthGate() {
 
 export default function RootLayout() {
   return (
-    <SQLiteProvider databaseName="usemargin.db" onInit={runMigrations}>
+    <SQLiteProvider databaseName="ledgr.db" onInit={runMigrations}>
       <AuthProvider>
         <SyncProvider>
           <TimezoneProvider>

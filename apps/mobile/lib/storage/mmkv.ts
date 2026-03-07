@@ -1,7 +1,7 @@
 import { MMKV } from "react-native-mmkv";
 
 export const storage = new MMKV({
-  id: "usemargin-storage",
+  id: "ledgr-storage",
 });
 
 /**

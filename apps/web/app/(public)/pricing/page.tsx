@@ -3,7 +3,8 @@ import { PricingContent } from "./pricing-content";
 
 export const metadata = {
   title: "Pricing - ledgr",
-  description: "Simple, transparent pricing. Choose the plan that works for you.",
+  description:
+    "Simple, transparent pricing for ledgr. Start free, upgrade when you need more.",
 };
 
 export default async function PricingPage() {

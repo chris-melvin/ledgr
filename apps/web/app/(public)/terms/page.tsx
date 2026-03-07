@@ -14,7 +14,7 @@ export default function TermsPage() {
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-stone-800 sm:text-4xl">
             Terms of Service
           </h1>
           <p className="mt-4 text-sm text-stone-500">

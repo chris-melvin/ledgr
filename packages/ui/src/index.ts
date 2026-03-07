@@ -1,5 +1,5 @@
 /**
- * @repo/ui - Shared UI components for usemargin
+ * @repo/ui - Shared UI components for ledgr
  *
  * This package will contain reusable React components used across the app.
  * Components will be added as we build the application.

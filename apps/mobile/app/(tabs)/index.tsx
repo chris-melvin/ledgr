@@ -53,7 +53,7 @@ export default function TodayScreen() {
     <SafeAreaView className="flex-1 bg-gray-50">
       {/* Header */}
       <View className="flex-row items-center justify-between px-6 pt-2 pb-3">
-        <Text className="text-2xl font-bold">useMargin</Text>
+        <Text className="text-2xl font-bold">ledgr</Text>
         <View className="flex-row items-center">
           {status === "syncing" && (
             <Text className="text-xs text-gray-400 mr-2">syncing...</Text>

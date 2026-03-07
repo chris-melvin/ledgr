@@ -14,11 +14,11 @@ export default function RefundPage() {
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-stone-800 sm:text-4xl">
             Refund Policy
           </h1>
           <p className="mt-4 text-sm text-stone-500">
-            Last updated: January 17, 2026
+            Last updated: March 7, 2026
           </p>
         </div>
 
@@ -54,7 +54,7 @@ export default function RefundPage() {
           <h3>Initial Purchase - Full Refund Available</h3>
           <div className="bg-teal-50 border-l-4 border-teal-500 p-4 my-6 rounded">
             <p className="m-0">
-              ✅ <strong>Full refund available</strong> within 14 days of your first Pro payment
+              <strong>Full refund available</strong> within 14 days of your first Pro payment
             </p>
           </div>
           <p>
@@ -66,9 +66,9 @@ export default function RefundPage() {
           <h3>Renewals - No Refunds (But You Can Cancel)</h3>
           <div className="bg-stone-100 border-l-4 border-stone-400 p-4 my-6 rounded">
             <p className="m-0">
-              ❌ <strong>No refunds</strong> for renewal charges (monthly or yearly)
+              <strong>No refunds</strong> for renewal charges (monthly or yearly)
               <br />
-              ✅ <strong>You can cancel</strong> anytime to stop future charges
+              <strong>You can cancel</strong> anytime to stop future charges
             </p>
           </div>
           <p>
