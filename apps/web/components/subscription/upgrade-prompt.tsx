@@ -1,6 +1,7 @@
 "use client";
 
-import { Lock, Sparkles, Clock } from "lucide-react";
+import Link from "next/link";
+import { Lock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AccessCheckResult } from "@/hooks/use-subscription";
 
@@ -10,10 +11,6 @@ interface UpgradePromptProps {
   className?: string;
 }
 
-/**
- * Upgrade prompt component shown when user doesn't have access to a feature
- * Currently shows "Coming Soon" since payment gateway is not yet set up
- */
 export function UpgradePrompt({
   accessResult,
   variant = "card",
@@ -23,7 +20,7 @@ export function UpgradePrompt({
     return null;
   }
 
-  const { title, description } = accessResult.upgradePrompt;
+  const { title, description, ctaText, ctaHref } = accessResult.upgradePrompt;
   const isCredits = accessResult.reason === "insufficient_credits";
   const Icon = isCredits ? Sparkles : Lock;
 
@@ -42,15 +39,15 @@ export function UpgradePrompt({
             <Icon className="w-5 h-5 text-amber-600 shrink-0" />
             <span className="text-sm text-amber-900">{description}</span>
           </div>
-          <div
+          <Link
+            href={ctaHref}
             className={cn(
               "flex items-center gap-1.5 px-4 py-1.5 rounded-lg shrink-0",
-              "bg-stone-200 text-stone-500 text-sm font-medium"
+              "bg-amber-600 text-white text-sm font-medium hover:bg-amber-700 transition-colors"
             )}
           >
-            <Clock className="w-4 h-4" />
-            Coming Soon
-          </div>
+            {ctaText}
+          </Link>
         </div>
       </div>
     );
@@ -69,15 +66,15 @@ export function UpgradePrompt({
         <div className="flex-1 min-w-0">
           <p className="text-sm text-amber-900 truncate">{description}</p>
         </div>
-        <div
+        <Link
+          href={ctaHref}
           className={cn(
             "flex items-center gap-1 px-3 py-1 rounded-md shrink-0",
-            "bg-stone-200 text-stone-500 text-sm font-medium"
+            "bg-amber-600 text-white text-sm font-medium hover:bg-amber-700 transition-colors"
           )}
         >
-          <Clock className="w-3 h-3" />
-          Coming Soon
-        </div>
+          {ctaText}
+        </Link>
       </div>
     );
   }
@@ -99,22 +96,21 @@ export function UpgradePrompt({
       <h3 className="text-lg font-semibold text-stone-900 mb-2">{title}</h3>
       <p className="text-sm text-stone-500 max-w-sm mb-6">{description}</p>
 
-      <div
+      <Link
+        href={ctaHref}
         className={cn(
           "flex items-center gap-2 px-6 py-3 rounded-xl",
-          "bg-stone-200 text-stone-500 font-semibold"
+          "bg-amber-600 text-white font-semibold hover:bg-amber-700 transition-colors"
         )}
       >
-        <Clock className="w-5 h-5" />
-        Coming Soon
-      </div>
+        {ctaText}
+      </Link>
     </div>
   );
 }
 
 /**
  * Simple lock icon overlay for locked features
- * Shows "Coming Soon" since payment gateway is not yet set up
  */
 export function LockedOverlay({
   className,
@@ -134,8 +130,8 @@ export function LockedOverlay({
       )}
     >
       <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 shadow-sm">
-        <Clock className="w-4 h-4 text-amber-500" />
-        <span className="text-sm font-medium text-stone-600">Coming Soon</span>
+        <Lock className="w-4 h-4 text-amber-500" />
+        <span className="text-sm font-medium text-stone-600">Pro</span>
       </div>
     </div>
   );

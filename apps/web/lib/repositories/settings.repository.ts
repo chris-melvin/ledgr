@@ -102,29 +102,26 @@ class SettingsRepository {
     userId: string,
     data: UserSettingsUpdate
   ): Promise<UserSettings> {
-    const existing = await this.get(supabase, userId);
-
-    if (existing) {
-      return this.update(supabase, userId, data);
-    }
-
-    const { data: created, error } = await supabase
+    const { data: upserted, error } = await supabase
       .from(this.tableName)
-      .insert({
-        user_id: userId,
-        default_daily_limit: 300,
-        currency: "PHP",
-        timezone: "Asia/Manila",
-        week_starts_on: 0,
-        show_savings_in_allocation: true,
-        tracking_mode: "tracking_only",
-        ...data,
-      })
+      .upsert(
+        {
+          user_id: userId,
+          default_daily_limit: 300,
+          currency: "PHP",
+          timezone: "Asia/Manila",
+          week_starts_on: 0,
+          show_savings_in_allocation: true,
+          tracking_mode: "tracking_only",
+          ...data,
+        },
+        { onConflict: "user_id" }
+      )
       .select()
       .single();
 
     if (error) throw error;
-    return created as UserSettings;
+    return upserted as UserSettings;
   }
 }
 

@@ -103,7 +103,7 @@ export function SubscriptionProvider({
           reason: "subscription_required",
           upgradePrompt: {
             ...config.upgradePrompt,
-            ctaHref: "/upgrade",
+            ctaHref: "/pricing",
           },
         };
       }
@@ -115,7 +115,7 @@ export function SubscriptionProvider({
           reason: "insufficient_credits",
           upgradePrompt: {
             ...config.upgradePrompt,
-            ctaHref: "/credits",
+            ctaHref: "/pricing",
           },
         };
       }

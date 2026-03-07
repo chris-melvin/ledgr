@@ -18,7 +18,7 @@ export default function TermsPage() {
             Terms of Service
           </h1>
           <p className="mt-4 text-sm text-stone-500">
-            Last updated: January 17, 2026
+            Last updated: March 7, 2026
           </p>
         </div>
 
@@ -26,7 +26,8 @@ export default function TermsPage() {
         <div className="prose prose-stone max-w-none">
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing or using ledgr (the "Service"), you agree to be bound by these Terms of
+            By accessing or using ledgr, formerly known as useMargin (the "Service"), operated by
+            useMargin ("Company", "we", "us", or "our"), you agree to be bound by these Terms of
             Service ("Terms") and our{" "}
             <Link href="/privacy" className="text-teal-600 hover:text-teal-700">
               Privacy Policy
@@ -180,9 +181,9 @@ export default function TermsPage() {
 
           <h2>6. Intellectual Property</h2>
           <p>
-            ledgr and all related content, features, and functionality are owned by ledgr
-            and are protected by international copyright, trademark, and other intellectual property
-            laws.
+            ledgr and all related content, features, and functionality are owned by useMargin
+            (operating as ledgr) and are protected by international copyright, trademark, and other
+            intellectual property laws.
           </p>
           <ul>
             <li>
@@ -265,7 +266,7 @@ export default function TermsPage() {
 
           <h2>9. Indemnification</h2>
           <p>
-            You agree to indemnify, defend, and hold harmless ledgr, its officers, directors,
+            You agree to indemnify, defend, and hold harmless useMargin (operating as ledgr), its officers, directors,
             employees, and agents from any claims, liabilities, damages, losses, costs, or expenses
             (including reasonable attorney's fees) arising from:
           </p>
@@ -352,7 +353,7 @@ export default function TermsPage() {
           <h3>Entire Agreement</h3>
           <p>
             These Terms, together with our Privacy Policy and Refund Policy, constitute the entire
-            agreement between you and ledgr regarding the Service.
+            agreement between you and useMargin (operating as ledgr) regarding the Service.
           </p>
 
           <h3>Severability</h3>

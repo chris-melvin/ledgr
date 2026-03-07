@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { LogOut, Crown, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 import { signOut } from "@/actions/auth";
-import { getPortalUrl } from "@/actions/subscriptions";
+import { getPortalUrl, cancelSubscription, resumeSubscription } from "@/actions/subscriptions";
 import type { SubscriptionInfo } from "@/actions/subscriptions/get-subscription";
 
 interface AccountSettingsProps {
@@ -39,8 +41,31 @@ export function AccountSettings({ userEmail, subscription }: AccountSettingsProp
     });
   };
 
+  const handleCancelSubscription = () => {
+    startTransition(async () => {
+      const result = await cancelSubscription();
+      if (result.success) {
+        toast.success("Subscription cancelled. You'll retain access until the end of your billing period.");
+      } else {
+        toast.error(result.error ?? "Failed to cancel subscription");
+      }
+    });
+  };
+
+  const handleResumeSubscription = () => {
+    startTransition(async () => {
+      const result = await resumeSubscription();
+      if (result.success) {
+        toast.success("Subscription resumed!");
+      } else {
+        toast.error(result.error ?? "Failed to resume subscription");
+      }
+    });
+  };
+
   const userInitial = userEmail.charAt(0).toUpperCase();
-  const isPro = subscription?.tier === "pro";
+  const isPro = subscription?.tier === "pro" && subscription?.isSubscribed;
+  const isCancelScheduled = subscription?.cancelAtPeriodEnd && subscription?.isSubscribed;
 
   return (
     <div className="space-y-6">
@@ -95,30 +120,71 @@ export function AccountSettings({ userEmail, subscription }: AccountSettingsProp
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-4 rounded-lg bg-stone-50 border border-stone-200/60">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-stone-200">
-                <Crown className="w-5 h-5 text-stone-500" />
+              <div className={cn(
+                "w-10 h-10 rounded-full flex items-center justify-center",
+                isPro ? "bg-amber-100" : "bg-stone-200"
+              )}>
+                <Crown className={cn("w-5 h-5", isPro ? "text-amber-600" : "text-stone-500")} />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-stone-900">Free Plan</p>
-                  <Badge variant="secondary">free</Badge>
+                  <p className="text-sm font-medium text-stone-900">
+                    {isPro ? "Pro Plan" : "Free Plan"}
+                  </p>
+                  <Badge variant={isPro ? "default" : "secondary"}>
+                    {isPro ? "pro" : "free"}
+                  </Badge>
                 </div>
                 <p className="text-xs text-stone-500">
-                  Pro features coming soon
+                  {isCancelScheduled && subscription?.periodEnd
+                    ? `Cancels on ${new Date(subscription.periodEnd).toLocaleDateString()}`
+                    : isPro && subscription?.periodEnd
+                      ? `Renews on ${new Date(subscription.periodEnd).toLocaleDateString()}`
+                      : "Upgrade to unlock all features"}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="relative">
-            <Button className="w-full gap-2" disabled>
-              <Crown className="w-4 h-4" />
-              Upgrade to Pro
+          {!isPro && (
+            <Button className="w-full gap-2" asChild>
+              <Link href="/pricing">
+                <Crown className="w-4 h-4" />
+                Upgrade to Pro
+              </Link>
             </Button>
-            <Badge className="absolute -top-2 -right-2 bg-amber-500 hover:bg-amber-500">
-              Coming Soon
-            </Badge>
-          </div>
+          )}
+
+          {isPro && !isCancelScheduled && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1 gap-2"
+                onClick={handleManageSubscription}
+                disabled={isPending}
+              >
+                Manage Subscription
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 gap-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                onClick={handleCancelSubscription}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
+
+          {isCancelScheduled && (
+            <Button
+              className="w-full gap-2"
+              onClick={handleResumeSubscription}
+              disabled={isPending}
+            >
+              Resume Subscription
+            </Button>
+          )}
         </CardContent>
       </Card>
 
@@ -141,7 +207,7 @@ export function AccountSettings({ userEmail, subscription }: AccountSettingsProp
 
           <Separator />
 
-          {/* Danger Zone - Coming Soon */}
+          {/* Danger Zone */}
           <div className="space-y-3 opacity-60">
             <div className="flex items-center gap-2 text-rose-600">
               <AlertTriangle className="w-4 h-4" />

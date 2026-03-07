@@ -18,7 +18,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="mt-4 text-sm text-stone-500">
-            Last updated: January 17, 2026
+            Last updated: March 7, 2026
           </p>
         </div>
 
@@ -26,9 +26,10 @@ export default function PrivacyPage() {
         <div className="prose prose-stone max-w-none">
           <h2>Introduction</h2>
           <p>
-            ledgr ("we," "us," or "our") operates the ledgr daily budgeting application
-            (the "Service"). This Privacy Policy explains how we collect, use, disclose, and protect
-            your information when you use our Service.
+            useMargin, operating as ledgr (formerly known as useMargin) ("we," "us," or "our"),
+            operates the ledgr daily budgeting application (the "Service"). This Privacy Policy
+            explains how we collect, use, disclose, and protect your information when you use our
+            Service.
           </p>
           <p>
             By using ledgr, you agree to the collection and use of information in accordance

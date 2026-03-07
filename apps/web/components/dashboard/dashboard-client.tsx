@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useMemo, useCallback, lazy, Suspense } from "react";
+import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Settings, MessageSquarePlus, Trash2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { isSameDay } from "date-fns";
+import { toast } from "sonner";
 import { useTimezone } from "@/components/providers";
 import * as dateUtils from "@/lib/utils/date";
 import { WeekStrip } from "@/components/calendar/week-strip";
@@ -15,8 +17,11 @@ import { SuccessFlash } from "@/components/ui/success-flash";
 import { useServerExpenses } from "@/hooks/use-server-expenses";
 import { useAiParser } from "@/hooks/use-ai-parser";
 import { useShortcuts } from "@/hooks/use-shortcuts";
+import { useSubscription, useFeatureAccess } from "@/hooks/use-subscription";
+import { usePaddle } from "@/components/paddle/paddle-provider";
 import { HeroDailyCard } from "@/components/dashboard/hero-daily-card";
 import { ExpenseEditModal } from "@/components/expenses/expense-edit-modal";
+import { UpgradePrompt } from "@/components/subscription/upgrade-prompt";
 import { showExpenseDeletedToast } from "@/components/ui/undo-toast";
 import { restoreExpense } from "@/actions/expenses/restore";
 import { formatCurrency, cn } from "@/lib/utils";
@@ -38,6 +43,8 @@ interface DashboardClientProps {
 
 export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "tracking_only" }: DashboardClientProps) {
   const { timezone } = useTimezone();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const [showSuccessFlash, setShowSuccessFlash] = useState(false);
   const [successMessage, setSuccessMessage] = useState("Added!");
@@ -46,6 +53,32 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
 
   const actualDailyLimit = dailyLimit ?? DEFAULT_DAILY_LIMIT;
   const isBudgetMode = trackingMode === "budget_enabled";
+
+  const { refreshStatus } = useSubscription();
+  const analyticsAccess = useFeatureAccess("analytics");
+  const { onCheckoutComplete } = usePaddle();
+
+  // Handle ?upgraded=true query param
+  useEffect(() => {
+    if (searchParams.get("upgraded") === "true") {
+      toast.success("Welcome to Pro! Your subscription is now active.");
+      refreshStatus();
+      router.replace("/dashboard");
+    }
+  }, [searchParams, refreshStatus, router]);
+
+  // Register Paddle checkout.completed callback
+  useEffect(() => {
+    onCheckoutComplete.current = () => {
+      toast.success("Payment successful! Activating your subscription...");
+      setTimeout(() => {
+        refreshStatus();
+      }, 2000);
+    };
+    return () => {
+      onCheckoutComplete.current = null;
+    };
+  }, [onCheckoutComplete, refreshStatus]);
 
   // Server-backed expenses with optimistic updates
   const { expenses, addExpenses, updateExpense, removeExpense } =
@@ -301,19 +334,25 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
           </TabsContent>
 
           <TabsContent value="insights" className="outline-none">
-            <Suspense
-              fallback={
-                <div className="flex items-center justify-center py-12">
-                  <div className="w-6 h-6 border-2 border-neutral-200 border-t-teal-500 rounded-full animate-spin" />
-                </div>
-              }
-            >
-              <InsightsTab
-                expenses={expenses}
-                dailyLimit={actualDailyLimit}
-                isBudgetMode={isBudgetMode}
-              />
-            </Suspense>
+            {analyticsAccess.hasAccess ? (
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center py-12">
+                    <div className="w-6 h-6 border-2 border-neutral-200 border-t-teal-500 rounded-full animate-spin" />
+                  </div>
+                }
+              >
+                <InsightsTab
+                  expenses={expenses}
+                  dailyLimit={actualDailyLimit}
+                  isBudgetMode={isBudgetMode}
+                />
+              </Suspense>
+            ) : (
+              <div className="max-w-lg mx-auto p-4">
+                <UpgradePrompt accessResult={analyticsAccess} variant="card" />
+              </div>
+            )}
           </TabsContent>
         </main>
       </Tabs>

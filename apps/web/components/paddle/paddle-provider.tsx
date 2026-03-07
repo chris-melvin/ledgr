@@ -6,7 +6,9 @@ import {
   useEffect,
   useState,
   useCallback,
+  useRef,
   type ReactNode,
+  type MutableRefObject,
 } from "react";
 import {
   initializePaddle,
@@ -19,12 +21,14 @@ interface PaddleContextValue {
   paddle: Paddle | null;
   isLoaded: boolean;
   openCheckout: (options: CheckoutOpenOptions) => void;
+  onCheckoutComplete: MutableRefObject<(() => void) | null>;
 }
 
 const PaddleContext = createContext<PaddleContextValue>({
   paddle: null,
   isLoaded: false,
   openCheckout: () => {},
+  onCheckoutComplete: { current: null },
 });
 
 export function usePaddle() {
@@ -42,6 +46,7 @@ interface PaddleProviderProps {
 export function PaddleProvider({ children }: PaddleProviderProps) {
   const [paddle, setPaddle] = useState<Paddle | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const onCheckoutComplete = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
@@ -57,6 +62,11 @@ export function PaddleProvider({ children }: PaddleProviderProps) {
     initializePaddle({
       environment,
       token: clientToken,
+      eventCallback: (event) => {
+        if (event.name === "checkout.completed") {
+          onCheckoutComplete.current?.();
+        }
+      },
     })
       .then((paddleInstance) => {
         if (paddleInstance) {
@@ -81,7 +91,7 @@ export function PaddleProvider({ children }: PaddleProviderProps) {
   );
 
   return (
-    <PaddleContext.Provider value={{ paddle, isLoaded, openCheckout }}>
+    <PaddleContext.Provider value={{ paddle, isLoaded, openCheckout, onCheckoutComplete }}>
       {children}
     </PaddleContext.Provider>
   );

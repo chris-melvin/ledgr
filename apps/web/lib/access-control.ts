@@ -74,7 +74,7 @@ export async function checkFeatureAccess(
         reason: "subscription_required",
         upgradePrompt: {
           ...config.upgradePrompt,
-          ctaHref: "/upgrade",
+          ctaHref: "/pricing",
         },
       };
     }
@@ -90,7 +90,7 @@ export async function checkFeatureAccess(
         reason: "insufficient_credits",
         upgradePrompt: {
           ...config.upgradePrompt,
-          ctaHref: "/credits",
+          ctaHref: "/pricing",
         },
       };
     }
