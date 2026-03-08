@@ -1,0 +1,60 @@
+---
+title: "Type It Like You Say It: How Smart Input Works"
+description: "Logging an expense in ledgr takes 3 seconds. Just type what you spent the way you'd say it — no forms, no dropdowns, no friction."
+date: "2026-03-23"
+author: "ledgr team"
+published: true
+tags:
+  - features
+  - tips
+---
+
+The biggest enemy of expense tracking isn't forgetfulness — it's friction. Every tap, every dropdown, every "select a category" screen is a tiny reason to say "I'll log it later." And "later" means never.
+
+We built Smart Input to kill that friction entirely.
+
+## How It Works
+
+Instead of filling out a form, you just type what you spent the way you'd naturally say it:
+
+- `coffee 120`
+- `grab home 180`
+- `groceries 1500`
+- `lunch with team 450`
+- `electric bill 1500`
+- `mom birthday gift 2000`
+
+That's it. ledgr parses the description, amount, and timestamp from plain text. No category dropdowns. No date pickers. No "are you sure?" confirmations.
+
+On desktop, hit **Cmd+K** (or Ctrl+K on Windows) to open Smart Input from anywhere. On mobile, tap the floating button. Type, hit enter, done.
+
+## What Gets Parsed
+
+Smart Input understands more than you might expect:
+
+| You type | ledgr understands |
+|----------|-------------------|
+| `coffee 120` | "coffee" — ₱120 — right now |
+| `grab 180 at 2pm` | "grab" — ₱180 — today at 2:00 PM |
+| `lunch 350 yesterday` | "lunch" — ₱350 — yesterday |
+| `rent 6000` | "rent" — ₱6,000 — right now |
+
+The description is everything that isn't a number or a time reference. The amount is the number. The time is optional — if you don't specify, it defaults to now.
+
+## 3 Seconds vs. 30 Seconds
+
+We've timed it. Logging an expense in a traditional app — open the app, tap "add," fill in the amount, pick a category, optionally add a note, tap save — takes about 30 seconds. More if you're indecisive about the category.
+
+With Smart Input, it's **3 seconds**. Open, type, enter.
+
+That difference matters because expense tracking is a habit, and habits live or die on friction. The easier it is, the more consistently you do it. The more consistently you do it, the better your data. The better your data, the more useful your daily allowance becomes.
+
+It's a flywheel, and Smart Input is what gets it spinning.
+
+## Build the Muscle Memory
+
+Here's a challenge: for the next three days, log every expense within 10 seconds of spending. Don't wait until evening. Don't batch them. Buy a coffee, type `coffee 65`, move on.
+
+By day three, it'll feel as natural as sending a text message. That's when expense tracking stops being a chore and starts being a reflex.
+
+[Try Smart Input for yourself](/signup) — your first expense takes 3 seconds.

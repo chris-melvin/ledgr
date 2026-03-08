@@ -26,9 +26,42 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "ledgr — Your Daily Spending Companion",
+  metadataBase: new URL("https://ledgr.ink"),
+  title: {
+    default: "ledgr — Your Daily Spending Companion",
+    template: "%s | ledgr",
+  },
   description:
     "Know exactly what you can spend today, every day. Calendar-first budgeting built for freedom, not restriction.",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://ledgr.ink",
+    siteName: "ledgr",
+    title: "ledgr — Your Daily Spending Companion",
+    description:
+      "Know exactly what you can spend today, every day. Calendar-first budgeting built for freedom, not restriction.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ledgr — Your Daily Spending Companion",
+    description:
+      "Know exactly what you can spend today, every day. Calendar-first budgeting built for freedom, not restriction.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://ledgr.ink",
+  },
 };
 
 export default function RootLayout({
