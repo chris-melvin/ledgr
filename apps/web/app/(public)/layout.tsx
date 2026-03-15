@@ -1,12 +1,19 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
+import { createClient } from "@/lib/supabase/server";
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isLoggedIn = !!user;
+
   return (
     <div className="min-h-screen bg-[#FDFBF7]">
       {/* Navigation */}
@@ -19,19 +26,30 @@ export default function PublicLayout({
 
           {/* Nav Actions */}
           <div className="flex items-center gap-3">
-            <Button
-              asChild
-              variant="ghost"
-              className="text-neutral-600 hover:text-neutral-900"
-            >
-              <Link href="/login">Sign In</Link>
-            </Button>
-            <Button
-              asChild
-              className="bg-teal-600 text-white shadow-sm hover:bg-teal-700"
-            >
-              <Link href="/signup">Start Free</Link>
-            </Button>
+            {isLoggedIn ? (
+              <Button
+                asChild
+                className="bg-teal-600 text-white shadow-sm hover:bg-teal-700"
+              >
+                <Link href="/dashboard">Go to Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="text-neutral-600 hover:text-neutral-900"
+                >
+                  <Link href="/login">Sign In</Link>
+                </Button>
+                <Button
+                  asChild
+                  className="bg-teal-600 text-white shadow-sm hover:bg-teal-700"
+                >
+                  <Link href="/signup">Start Free</Link>
+                </Button>
+              </>
+            )}
           </div>
         </nav>
       </header>
