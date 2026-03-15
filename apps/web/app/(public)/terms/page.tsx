@@ -65,7 +65,7 @@ export default function TermsPage() {
 
           <h3>2.2 Pro Tier</h3>
           <p>
-            The Pro tier is available for ₱250 per month or ₱2,500 per year (17% savings). Pro
+            The Pro tier is available for $1.99 per month or $19.99 per year (16% savings). Pro
             subscribers receive all Free tier features plus:
           </p>
           <ul>

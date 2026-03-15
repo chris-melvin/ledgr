@@ -87,8 +87,8 @@ export default function AboutPage() {
           </p>
           <ul>
             <li>
-              <strong>Peso pricing:</strong> ₱250/month for Pro (not $9.99 with hidden conversion
-              fees)
+              <strong>Simple pricing:</strong> $1.99/month for Pro — no hidden fees or surprise
+              charges
             </li>
             <li>
               <strong>Paycheck-to-paycheck friendly:</strong> Most budgeting advice assumes you have
@@ -220,7 +220,7 @@ export default function AboutPage() {
               allowance calculations, calendar view)
             </li>
             <li>
-              <strong>Pro (₱250/month or ₱2,500/year):</strong> Advanced analytics, CSV/PDF
+              <strong>Pro ($1.99/month or $19.99/year):</strong> Advanced analytics, CSV/PDF
               exports, priority support
             </li>
           </ul>

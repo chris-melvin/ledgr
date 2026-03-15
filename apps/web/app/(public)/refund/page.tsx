@@ -58,7 +58,7 @@ export default function RefundPage() {
             </p>
           </div>
           <p>
-            When you first subscribe to ledgr Pro (₱250/month or ₱2,500/year), you have 14 days
+            When you first subscribe to ledgr Pro ($1.99/month or $19.99/year), you have 14 days
             to try all Pro features risk-free. If you're not satisfied, we'll refund your entire
             payment—no questions asked.
           </p>
@@ -256,7 +256,7 @@ export default function RefundPage() {
             the end of the year you paid for, but you won't receive a refund for unused months.
           </p>
           <p>
-            <strong>Example:</strong> If you purchased a yearly Pro subscription (₱2,500/year) and
+            <strong>Example:</strong> If you purchased a yearly Pro subscription ($19.99/year) and
             cancel after 3 months, you'll keep Pro access for the remaining 9 months, but no refund
             will be issued.
           </p>

@@ -14,6 +14,12 @@ import {
   computeMonthComparison,
   computeRollingAverage,
   computeWeekdayWeekendSplit,
+  computeTrackingCompleteness,
+  computeTrackingCalendar,
+  computeTimeOfDay,
+  computeCumulativeSpending,
+  computeTopSpendingDays,
+  computeCategoryTrends,
 } from "@/lib/insights/calculations";
 import { SpendingTrendChart } from "./spending-trend-chart";
 import { CategoryBreakdown } from "./category-breakdown";
@@ -21,6 +27,12 @@ import { DayOfWeekHeatmap } from "./day-of-week-heatmap";
 import { StreakCard } from "./streak-card";
 import { MonthComparisonCard } from "./month-comparison";
 import { WeekdayWeekendSplitCard } from "./weekday-weekend-split";
+import { TrackingCompletenessCard } from "./tracking-completeness";
+import { TrackingCalendar } from "./tracking-calendar";
+import { TimeOfDayChart } from "./time-of-day-chart";
+import { CumulativeSpendingChart } from "./cumulative-spending-chart";
+import { TopSpendingDays } from "./top-spending-days";
+import { CategoryTrends } from "./category-trends";
 import type { Expense } from "@repo/database";
 import type { InsightsPeriod } from "@/lib/insights/types";
 
@@ -42,7 +54,6 @@ export function InsightsTab({
 
   // Filter expenses to the selected period
   const periodExpenses = useMemo(() => {
-    const now = new Date();
     const endTimestamp = dateUtils.getCurrentTimestamp(timezone, true);
     const startTimestamp = dateUtils.subtractDaysFromTimestamp(
       endTimestamp,
@@ -108,9 +119,39 @@ export function InsightsTab({
     [periodExpenses, timezone]
   );
 
+  const trackingCompleteness = useMemo(
+    () => computeTrackingCompleteness(periodExpenses, timezone, days),
+    [periodExpenses, timezone, days]
+  );
+
+  const trackingCalendar = useMemo(
+    () => computeTrackingCalendar(expenses, timezone),
+    [expenses, timezone]
+  );
+
+  const timeOfDay = useMemo(
+    () => computeTimeOfDay(periodExpenses, timezone),
+    [periodExpenses, timezone]
+  );
+
+  const cumulativeSpending = useMemo(
+    () => computeCumulativeSpending(expenses, timezone),
+    [expenses, timezone]
+  );
+
+  const topSpendingDays = useMemo(
+    () => computeTopSpendingDays(periodExpenses, timezone),
+    [periodExpenses, timezone]
+  );
+
+  const categoryTrends = useMemo(
+    () => computeCategoryTrends(expenses, timezone),
+    [expenses, timezone]
+  );
+
   return (
     <div className="max-w-lg mx-auto p-3 sm:p-4 space-y-4">
-      {/* Period Toggle + Summary */}
+      {/* 1. Period Toggle + Summary */}
       <div className="bg-white rounded-2xl border border-neutral-200 shadow-lg overflow-hidden">
         <div className="p-4">
           {/* Period Toggle */}
@@ -151,10 +192,13 @@ export function InsightsTab({
         </div>
       </div>
 
-      {/* Month-over-Month Comparison */}
+      {/* 2. Tracking Completeness Score (NEW) */}
+      <TrackingCompletenessCard data={trackingCompleteness} />
+
+      {/* 3. Month-over-Month Comparison */}
       <MonthComparisonCard comparison={monthComparison} />
 
-      {/* Spending Trend Chart */}
+      {/* 4. Spending Trend Chart */}
       <SpendingTrendChart
         data={dailySpending}
         rollingAverage={rollingAverage}
@@ -162,21 +206,36 @@ export function InsightsTab({
         isBudgetMode={isBudgetMode}
       />
 
-      {/* Weekend vs Weekday Split */}
+      {/* 5. Cumulative Spending Chart (NEW) */}
+      <CumulativeSpendingChart data={cumulativeSpending} />
+
+      {/* 6. Weekend vs Weekday Split */}
       <WeekdayWeekendSplitCard data={weekdayWeekendSplit} />
 
-      {/* Category Breakdown */}
+      {/* 7. Time-of-Day Distribution (NEW) */}
+      <TimeOfDayChart data={timeOfDay} />
+
+      {/* 8. Category Breakdown */}
       <CategoryBreakdown categories={categoryBreakdown} />
 
-      {/* Day of Week Heatmap */}
+      {/* 9. Top Spending Days (NEW) */}
+      <TopSpendingDays data={topSpendingDays} />
+
+      {/* 10. Category Trends Over Time (NEW) */}
+      <CategoryTrends data={categoryTrends} />
+
+      {/* 11. Day of Week Heatmap */}
       <DayOfWeekHeatmap
         data={dayOfWeek}
         dailyLimit={dailyLimit}
         isBudgetMode={isBudgetMode}
       />
 
-      {/* Streak Card */}
+      {/* 12. Streak Card */}
       <StreakCard streak={streak} />
+
+      {/* 13. Tracking Consistency Calendar (NEW) */}
+      <TrackingCalendar data={trackingCalendar} />
     </div>
   );
 }

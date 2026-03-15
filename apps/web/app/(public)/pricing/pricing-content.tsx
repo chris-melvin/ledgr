@@ -113,7 +113,7 @@ export function PricingContent({ isLoggedIn }: PricingContentProps) {
             <div className="mb-8">
               <div className="flex items-baseline gap-1">
                 <span className="font-mono text-4xl font-bold text-stone-800">
-                  {"\u20B1"}0
+                  $0
                 </span>
                 <span className="text-stone-500">/month</span>
               </div>

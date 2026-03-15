@@ -59,3 +59,44 @@ export interface RollingAveragePoint {
   date: string;
   average: number | null;
 }
+
+export interface TrackingCompleteness {
+  trackedDays: number;
+  totalDays: number;
+  percentage: number;
+  missedDates: string[]; // YYYY-MM-DD
+}
+
+export interface TrackingCalendarDay {
+  date: string; // YYYY-MM-DD
+  level: 0 | 1 | 2 | 3 | 4; // activity intensity
+  count: number;
+}
+
+export interface TimeOfDayBucket {
+  label: string;
+  range: string;
+  count: number;
+  total: number;
+  percentage: number;
+}
+
+export interface CumulativeSpendingPoint {
+  date: string;
+  day: number;
+  actual: number | null;
+  projected: number | null;
+}
+
+export interface TopSpendingDay {
+  date: string;
+  dateLabel: string;
+  total: number;
+  topExpense: { description: string; amount: number } | null;
+}
+
+export interface CategoryTrendWeek {
+  weekLabel: string;
+  startDate: string;
+  categories: Record<string, number>;
+}
