@@ -27,6 +27,7 @@ import { formatCurrency } from "@/lib/utils";
 import { DEFAULT_DAILY_LIMIT, CURRENCY } from "@/lib/constants";
 import type { Expense, TrackingMode } from "@repo/database";
 import type { ParsedExpense } from "@/hooks/use-ai-parser";
+import type { CardPreferences } from "@/components/dashboard/hero-card/card-theme";
 
 const InsightsTab = lazy(() =>
   import("@/components/insights/insights-tab").then((m) => ({
@@ -38,9 +39,10 @@ interface DashboardClientProps {
   initialExpenses: Expense[];
   dailyLimit?: number;
   trackingMode?: TrackingMode;
+  cardPreferences?: CardPreferences;
 }
 
-export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "tracking_only" }: DashboardClientProps) {
+export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "tracking_only", cardPreferences }: DashboardClientProps) {
   const { timezone } = useTimezone();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -267,6 +269,7 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
                 date={selectedDate}
                 timezone={timezone}
                 isBudgetMode={isBudgetMode}
+                cardPreferences={cardPreferences}
               />
 
               {/* Expense List Card */}

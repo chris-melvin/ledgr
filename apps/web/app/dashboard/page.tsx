@@ -4,6 +4,7 @@ import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { TimezoneProvider } from "@/components/providers";
 import { settingsRepository } from "@/lib/repositories";
 import type { Expense, UserSettings } from "@repo/database";
+import type { CardPreferences } from "@/components/dashboard/hero-card/card-theme";
 import * as dateUtils from "@/lib/utils/date";
 
 export default async function DashboardPage() {
@@ -51,12 +52,16 @@ export default async function DashboardPage() {
     expenses = data as Expense[];
   }
 
+  // Extract card preferences from settings (JSONB column, defaults to {})
+  const cardPreferences = (userSettings?.card_preferences ?? {}) as CardPreferences;
+
   return (
     <TimezoneProvider initialTimezone={timezone}>
       <DashboardClient
         initialExpenses={expenses}
         dailyLimit={userSettings?.default_daily_limit}
         trackingMode={userSettings?.tracking_mode ?? "tracking_only"}
+        cardPreferences={cardPreferences}
       />
     </TimezoneProvider>
   );

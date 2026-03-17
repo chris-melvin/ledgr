@@ -195,6 +195,7 @@ export interface UserSettings {
   total_fixed_expenses: number | null;
   calculated_daily_limit: number | null;
   tracking_mode: TrackingMode; // tracking_only or budget_enabled
+  card_preferences: Record<string, unknown>; // JSONB - hero card customization
   created_at: string;
   updated_at: string;
 }
@@ -421,6 +422,7 @@ export type UserSettingsInsert = {
   total_fixed_expenses?: number | null;
   calculated_daily_limit?: number | null;
   tracking_mode?: TrackingMode;
+  card_preferences?: Record<string, unknown>;
   created_at?: string;
   updated_at?: string;
 };
