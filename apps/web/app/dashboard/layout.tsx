@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/supabase/server";
 import { getUserAccessState } from "@/lib/access-control";
 import { SubscriptionProviderWrapper } from "@/components/subscription/subscription-provider-wrapper";
 
@@ -7,10 +7,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthUser();
 
   if (!user) {
     return <>{children}</>;

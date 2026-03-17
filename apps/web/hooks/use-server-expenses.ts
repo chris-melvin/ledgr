@@ -88,8 +88,8 @@ export function useServerExpenses(initialExpenses: Expense[]) {
         toast.error(errors.join(", "));
       }
 
-      // Force RSC re-fetch so initialExpenses updates
-      router.refresh();
+      // Deferred refresh — lets optimistic UI render before RSC re-fetch
+      setTimeout(() => router.refresh(), 0);
 
       return { success: errors.length === 0, errors };
     },
@@ -121,7 +121,7 @@ export function useServerExpenses(initialExpenses: Expense[]) {
         return { success: false, error: "Failed to delete expense" };
       }
 
-      router.refresh();
+      setTimeout(() => router.refresh(), 0);
 
       return { success: true };
     },
@@ -165,7 +165,7 @@ export function useServerExpenses(initialExpenses: Expense[]) {
         return { success: false, error: "Failed to update expense" };
       }
 
-      router.refresh();
+      setTimeout(() => router.refresh(), 0);
 
       return { success: true };
     },

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/sonner";
@@ -18,6 +17,7 @@ interface SettingsClientProps {
   userEmail: string;
   subscription: SubscriptionInfo | null;
   buckets?: BudgetBucket[];
+  initialTab?: string;
 }
 
 export function SettingsClient({
@@ -25,17 +25,13 @@ export function SettingsClient({
   userEmail,
   subscription,
   buckets = [],
+  initialTab = "general",
 }: SettingsClientProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
-
-  const currentTab = searchParams.get("tab") ?? "general";
+  const [currentTab, setCurrentTab] = useState(initialTab);
 
   const handleTabChange = (value: string) => {
-    startTransition(() => {
-      router.push(`/dashboard/settings?tab=${value}`, { scroll: false });
-    });
+    setCurrentTab(value);
+    window.history.replaceState(null, "", `/dashboard/settings?tab=${value}`);
   };
 
   return (

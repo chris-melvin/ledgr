@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/supabase/server";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { TimezoneProvider } from "@/components/providers";
 import { settingsRepository } from "@/lib/repositories";
@@ -8,11 +8,7 @@ import type { CardPreferences } from "@/components/dashboard/hero-card/card-them
 import * as dateUtils from "@/lib/utils/date";
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthUser();
 
   if (!user) {
     redirect("/login");

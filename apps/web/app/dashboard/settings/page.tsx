@@ -1,29 +1,29 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/supabase/server";
 import { settingsRepository, budgetBucketRepository } from "@/lib/repositories";
 import { getSubscription } from "@/actions/subscriptions";
 import { SettingsClient } from "./settings-client";
 
-export default async function SettingsPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { supabase, user } = await getAuthUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  // Fetch user settings
-  const userSettings = await settingsRepository.getOrCreate(supabase, user.id);
+  // Parallel data fetches — no sequential waterfall
+  const [userSettings, buckets, subscriptionResult] = await Promise.all([
+    settingsRepository.getOrCreate(supabase, user.id),
+    budgetBucketRepository.findAllOrdered(supabase, user.id),
+    getSubscription(),
+  ]);
 
-  // Fetch buckets
-  const buckets = await budgetBucketRepository.findAllOrdered(supabase, user.id);
-
-  // Fetch subscription info
-  const subscriptionResult = await getSubscription();
   const subscription = subscriptionResult.success ? subscriptionResult.data : null;
+  const { tab } = await searchParams;
 
   return (
     <SettingsClient
@@ -31,6 +31,7 @@ export default async function SettingsPage() {
       userEmail={user.email ?? ""}
       subscription={subscription}
       buckets={buckets}
+      initialTab={tab ?? "general"}
     />
   );
 }
