@@ -132,8 +132,7 @@ export class PaddleProvider implements PaymentProvider {
    * Get customer portal URL
    */
   async getPortalUrl(providerCustomerId: string): Promise<PortalSession> {
-    // Paddle uses a customer portal URL pattern
-    // For Paddle Billing, use the customer management API
+    // Paddle Billing: create a portal session via API
     const response = await fetch(
       `${this.baseUrl}/customers/${providerCustomerId}/portal-sessions`,
       {
@@ -147,17 +146,19 @@ export class PaddleProvider implements PaymentProvider {
     );
 
     if (!response.ok) {
-      // Fallback to a generic portal URL if API call fails
-      console.error("Failed to create portal session, using fallback");
-      return {
-        portalUrl: `https://customer-portal.paddle.com/?customer_id=${providerCustomerId}`,
-      };
+      const errorBody = await response.text().catch(() => "unknown");
+      console.error("Failed to create portal session:", response.status, errorBody);
+      throw new Error("Unable to open billing portal. Please manage your subscription from Settings.");
     }
 
     const data = await response.json();
-    return {
-      portalUrl: data.data.urls?.general ?? data.data.url,
-    };
+    const portalUrl = data.data?.urls?.general?.overview ?? data.data?.urls?.general ?? data.data?.url;
+
+    if (!portalUrl) {
+      throw new Error("Billing portal URL not available. Please try again later.");
+    }
+
+    return { portalUrl };
   }
 
   /**

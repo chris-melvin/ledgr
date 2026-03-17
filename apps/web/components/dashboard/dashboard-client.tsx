@@ -6,7 +6,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Settings, MessageSquarePlus, Trash2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { isSameDay } from "date-fns";
-import { toast } from "sonner";
 import { useTimezone } from "@/components/providers";
 import * as dateUtils from "@/lib/utils/date";
 import { WeekStrip } from "@/components/calendar/week-strip";
@@ -21,10 +20,10 @@ import { useSubscription, useFeatureAccess } from "@/hooks/use-subscription";
 import { usePaddle } from "@/components/paddle/paddle-provider";
 import { HeroDailyCard } from "@/components/dashboard/hero-daily-card";
 import { ExpenseEditModal } from "@/components/expenses/expense-edit-modal";
-import { UpgradePrompt } from "@/components/subscription/upgrade-prompt";
+import { UpgradePrompt, ProSuccessModal } from "@/components/subscription";
 import { showExpenseDeletedToast } from "@/components/ui/undo-toast";
 import { restoreExpense } from "@/actions/expenses/restore";
-import { formatCurrency, cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { DEFAULT_DAILY_LIMIT, CURRENCY } from "@/lib/constants";
 import type { Expense, TrackingMode } from "@repo/database";
 import type { ParsedExpense } from "@/hooks/use-ai-parser";
@@ -50,19 +49,20 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
   const [successMessage, setSuccessMessage] = useState("Added!");
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [editExpense, setEditExpense] = useState<Expense | null>(null);
+  const [proModalOpen, setProModalOpen] = useState(false);
 
   const actualDailyLimit = dailyLimit ?? DEFAULT_DAILY_LIMIT;
   const isBudgetMode = trackingMode === "budget_enabled";
 
-  const { refreshStatus } = useSubscription();
+  const { refreshStatus, subscription } = useSubscription();
   const analyticsAccess = useFeatureAccess("analytics");
   const { onCheckoutComplete } = usePaddle();
 
   // Handle ?upgraded=true query param
   useEffect(() => {
     if (searchParams.get("upgraded") === "true") {
-      toast.success("Welcome to Pro! Your subscription is now active.");
       refreshStatus();
+      setProModalOpen(true);
       router.replace("/dashboard");
     }
   }, [searchParams, refreshStatus, router]);
@@ -70,9 +70,9 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
   // Register Paddle checkout.completed callback
   useEffect(() => {
     onCheckoutComplete.current = () => {
-      toast.success("Payment successful! Activating your subscription...");
       setTimeout(() => {
         refreshStatus();
+        setProModalOpen(true);
       }, 2000);
     };
     return () => {
@@ -205,7 +205,14 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
 
       {/* Header */}
       <header className="relative flex-shrink-0 h-14 sm:h-12 px-3 sm:px-4 flex items-center justify-between border-b border-neutral-200 bg-white/80 backdrop-blur-sm safe-area-top">
-        <span className="text-base font-bold text-neutral-800 tracking-tight">ledgr</span>
+        <div className="flex items-center gap-2">
+          <span className="text-base font-bold text-neutral-800 tracking-tight">ledgr</span>
+          {subscription.isPro && (
+            <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-gradient-to-r from-amber-400 to-orange-400 text-white leading-none">
+              pro
+            </span>
+          )}
+        </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
           <Link
@@ -388,6 +395,12 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
         onDelete={handleDeleteExpense}
         existingCategories={existingCategories}
         timezone={timezone}
+      />
+
+      {/* Pro Success Modal */}
+      <ProSuccessModal
+        open={proModalOpen}
+        onClose={() => setProModalOpen(false)}
       />
     </div>
   );

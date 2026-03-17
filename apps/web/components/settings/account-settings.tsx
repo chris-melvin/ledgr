@@ -33,10 +33,16 @@ export function AccountSettings({ userEmail, subscription }: AccountSettingsProp
   const handleManageSubscription = () => {
     startTransition(async () => {
       const result = await getPortalUrl();
-      if (result.success && result.data) {
-        window.location.href = result.data.portalUrl;
+      if (!result.success) {
+        toast.error(
+          result.error || "Unable to open billing portal. Please contact support if this persists."
+        );
+        return;
+      }
+      if (result.data?.portalUrl) {
+        window.open(result.data.portalUrl, "_blank", "noopener,noreferrer");
       } else {
-        toast.error("Failed to open subscription portal");
+        toast.error("Unable to open billing portal. Please try again later.");
       }
     });
   };
