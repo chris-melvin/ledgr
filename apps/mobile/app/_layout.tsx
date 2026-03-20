@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import { AuthProvider, useAuth } from "@/components/providers/auth-provider";
 import { SyncProvider } from "@/components/providers/sync-provider";
 import { TimezoneProvider } from "@/components/providers/timezone-provider";
+import { SettingsProvider } from "@/components/providers/settings-provider";
+import { SubscriptionProvider } from "@/components/providers/subscription-provider";
 import { runMigrations } from "@/lib/db/migrations";
 import "../global.css";
 
@@ -33,10 +35,14 @@ export default function RootLayout() {
     <SQLiteProvider databaseName="ledgr.db" onInit={runMigrations}>
       <AuthProvider>
         <SyncProvider>
-          <TimezoneProvider>
-            <StatusBar style="auto" />
-            <AuthGate />
-          </TimezoneProvider>
+          <SettingsProvider>
+            <SubscriptionProvider>
+              <TimezoneProvider>
+                <StatusBar style="auto" />
+                <AuthGate />
+              </TimezoneProvider>
+            </SubscriptionProvider>
+          </SettingsProvider>
         </SyncProvider>
       </AuthProvider>
     </SQLiteProvider>

@@ -5,11 +5,12 @@
   "private": true,
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~6.1.2",
     "@repo/database": "workspace:*",
     "@repo/shared": "workspace:*",
     "@supabase/supabase-js": "^2.89.0",
@@ -17,6 +18,7 @@
     "date-fns-tz": "^3.2.0",
     "expo": "~54.0.33",
     "expo-constants": "~18.0.13",
+    "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.11",
     "expo-localization": "~17.0.8",
     "expo-network": "~8.0.8",
@@ -26,9 +28,11 @@
     "nativewind": "^4.1.23",
     "react": "19.1.0",
     "react-native": "0.81.5",
-    "react-native-mmkv": "^3.2.0",
-    "react-native-safe-area-context": "~5.4.0",
-    "react-native-screens": "~4.11.1",
+    "react-native-calendars": "^1.1314.0",
+    "react-native-gifted-charts": "^1.4.76",
+    "react-native-reanimated": "^4.2.2",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.16.0",
     "react-native-uuid": "^2.0.2",
     "tailwindcss": "^3.4.17"
   },

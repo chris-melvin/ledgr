@@ -1,16 +1,17 @@
 import { Tabs } from "expo-router";
-import { Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#10b981",
-        tabBarInactiveTintColor: "#9ca3af",
+        tabBarActiveTintColor: "#14b8a6",
+        tabBarInactiveTintColor: "#a3a3a3",
         headerShown: false,
         tabBarStyle: {
           borderTopWidth: 1,
-          borderTopColor: "#f3f4f6",
+          borderTopColor: "#e5e5e5",
+          backgroundColor: "#ffffff",
         },
       }}
     >
@@ -18,15 +19,26 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Today",
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>$</Text>,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "today" : "today-outline"} size={22} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="calendar"
         options={{
           title: "Calendar",
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 20, color }}>&#128197;</Text>
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "calendar" : "calendar-outline"} size={22} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="insights"
+        options={{
+          title: "Insights",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "stats-chart" : "stats-chart-outline"} size={22} color={color} />
           ),
         }}
       />
@@ -34,8 +46,8 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: "Settings",
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 20, color }}>&#9881;</Text>
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "settings" : "settings-outline"} size={22} color={color} />
           ),
         }}
       />

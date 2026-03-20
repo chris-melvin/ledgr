@@ -1,7 +1,7 @@
 export type InsightsPeriod = "week" | "month";
 
 export interface DailySpending {
-  date: string;
+  date: string; // YYYY-MM-DD
   amount: number;
   isToday: boolean;
   overBudget: boolean;
@@ -15,7 +15,7 @@ export interface CategoryTotal {
 }
 
 export interface DayOfWeekSpending {
-  dayIndex: number;
+  dayIndex: number; // 0 (Sun) - 6 (Sat)
   dayLabel: string;
   average: number;
   totalDays: number;
@@ -64,12 +64,12 @@ export interface TrackingCompleteness {
   trackedDays: number;
   totalDays: number;
   percentage: number;
-  missedDates: string[];
+  missedDates: string[]; // YYYY-MM-DD
 }
 
 export interface TrackingCalendarDay {
-  date: string;
-  level: 0 | 1 | 2 | 3 | 4;
+  date: string; // YYYY-MM-DD
+  level: 0 | 1 | 2 | 3 | 4; // activity intensity
   count: number;
 }
 

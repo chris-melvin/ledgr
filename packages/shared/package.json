@@ -7,7 +7,10 @@
     ".": "./src/index.ts",
     "./constants": "./src/constants.ts",
     "./date": "./src/date.ts",
-    "./validations": "./src/validations/index.ts"
+    "./validations": "./src/validations/index.ts",
+    "./insights": "./src/insights/calculations.ts",
+    "./insights/types": "./src/insights/types.ts",
+    "./card-theme": "./src/card-theme.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit",

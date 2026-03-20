@@ -1,107 +1,122 @@
 import { useState, useCallback } from "react";
-import { View, TouchableOpacity, Text } from "react-native";
+import { View, TouchableOpacity, Text, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   getTodayTimestamp,
   getStartOfDay,
   getEndOfDay,
-  formatDate,
-  addDaysToTimestamp,
-  subtractDaysFromTimestamp,
-  DATE_FORMATS,
 } from "@repo/shared/date";
 import { useTimezone } from "@/components/providers/timezone-provider";
+import { useSettingsContext } from "@/components/providers/settings-provider";
 import { useExpenses } from "@/hooks/use-expenses";
 import { useSyncStatus } from "@/hooks/use-sync";
+import { useCategories } from "@/hooks/use-categories";
+import { useShortcuts } from "@/hooks/use-shortcuts";
 import { HeroDailyCard } from "@/components/dashboard/hero-daily-card";
 import { WeekStrip } from "@/components/dashboard/week-strip";
 import { ExpenseList } from "@/components/expenses/expense-list";
 import { SmartInput } from "@/components/expenses/smart-input";
+import { ExpenseEditModal } from "@/components/expenses/expense-edit-modal";
+import type { LocalExpense } from "@/lib/db/expense-dao";
 
 export default function TodayScreen() {
   const timezone = useTimezone();
+  const { settings } = useSettingsContext();
   const [selectedDate, setSelectedDate] = useState(() => getTodayTimestamp(timezone));
   const [showInput, setShowInput] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<LocalExpense | null>(null);
   const { status } = useSyncStatus();
+  const { categories } = useCategories();
+  const { shortcutMap } = useShortcuts();
 
   const startOfDay = getStartOfDay(selectedDate, timezone);
   const endOfDay = getEndOfDay(selectedDate, timezone);
 
-  const { expenses, total, addExpense, deleteExpense, refresh } = useExpenses(
-    startOfDay,
-    endOfDay
-  );
+  const { expenses, total, addExpense, updateExpense, deleteExpense } =
+    useExpenses(startOfDay, endOfDay);
 
-  const dateLabel = formatDate(selectedDate, timezone, DATE_FORMATS.WEEKDAY_SHORT);
+  const limit = settings.calculated_daily_limit ?? settings.default_daily_limit;
+  const isBudgetMode = settings.tracking_mode === "budget_enabled";
+  const remaining = limit - total;
+
+  const heroExpenses = expenses.map((e) => ({
+    label: e.label,
+    amount: e.amount,
+  }));
 
   const handleAddExpense = useCallback(
-    async (expense: { amount: number; label: string; occurred_at: string }) => {
+    async (expense: { amount: number; label: string; category?: string; occurred_at: string }) => {
       await addExpense(expense);
     },
     [addExpense]
   );
 
-  const handlePrevDay = () => {
-    setSelectedDate((prev) => subtractDaysFromTimestamp(prev, 1, timezone));
-  };
-
-  const handleNextDay = () => {
-    setSelectedDate((prev) => addDaysToTimestamp(prev, 1, timezone));
-  };
+  const handleTodayPress = useCallback(() => {
+    setSelectedDate(getTodayTimestamp(timezone));
+  }, [timezone]);
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: "#FDFBF7" }}>
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 pt-2 pb-3">
-        <Text className="text-2xl font-bold">ledgr</Text>
+      <View className="h-14 px-3 flex-row items-center justify-between border-b border-neutral-200 bg-white">
+        <Text className="text-base font-bold text-neutral-800 tracking-tight">ledgr</Text>
         <View className="flex-row items-center">
           {status === "syncing" && (
-            <Text className="text-xs text-gray-400 mr-2">syncing...</Text>
+            <Text className="text-xs text-neutral-400 mr-2">syncing...</Text>
           )}
           {status === "offline" && (
-            <Text className="text-xs text-orange-400 mr-2">offline</Text>
+            <Text className="text-xs text-amber-500 mr-2">offline</Text>
           )}
           {status === "error" && (
-            <Text className="text-xs text-red-400 mr-2">sync error</Text>
+            <Text className="text-xs text-rose-500 mr-2">sync error</Text>
           )}
         </View>
       </View>
 
-      {/* Week strip */}
-      <WeekStrip
-        selectedDate={selectedDate}
-        timezone={timezone}
-        onSelectDate={setSelectedDate}
-      />
+      {/* Scrollable content */}
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 12, gap: 16 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <WeekStrip
+          selectedDate={selectedDate}
+          timezone={timezone}
+          onSelectDate={setSelectedDate}
+          expenses={expenses}
+          dailyLimit={limit}
+          onTodayPress={handleTodayPress}
+        />
 
-      {/* Day navigation */}
-      <View className="flex-row items-center justify-between px-6 mb-2">
-        <TouchableOpacity onPress={handlePrevDay} className="p-2">
-          <Text className="text-gray-400 text-lg">&lt;</Text>
-        </TouchableOpacity>
-        <Text className="text-sm font-medium text-gray-600">{dateLabel}</Text>
-        <TouchableOpacity onPress={handleNextDay} className="p-2">
-          <Text className="text-gray-400 text-lg">&gt;</Text>
-        </TouchableOpacity>
-      </View>
+        <HeroDailyCard
+          spent={total}
+          remaining={remaining}
+          limit={limit}
+          expenses={heroExpenses}
+          selectedDate={selectedDate}
+          timezone={timezone}
+          isBudgetMode={isBudgetMode}
+        />
 
-      {/* Hero card */}
-      <HeroDailyCard total={total} date={dateLabel} />
-
-      {/* Expense list */}
-      <View className="flex-1">
         <ExpenseList
           expenses={expenses}
           timezone={timezone}
           onDelete={deleteExpense}
+          onEdit={setEditingExpense}
         />
-      </View>
+      </ScrollView>
 
       {/* FAB */}
       <TouchableOpacity
         onPress={() => setShowInput(true)}
-        className="absolute bottom-24 right-6 w-14 h-14 rounded-full bg-emerald-500 items-center justify-center shadow-lg"
+        className="absolute bottom-6 right-4 w-14 h-14 rounded-2xl items-center justify-center overflow-hidden"
+        style={styles.fab}
       >
+        <LinearGradient
+          colors={["#14b8a6", "#0d9488"]}
+          style={StyleSheet.absoluteFill}
+        />
         <Text className="text-white text-2xl font-light">+</Text>
       </TouchableOpacity>
 
@@ -109,9 +124,32 @@ export default function TodayScreen() {
       <SmartInput
         visible={showInput}
         timezone={timezone}
+        categories={categories}
+        shortcutMap={shortcutMap}
         onClose={() => setShowInput(false)}
         onSubmit={handleAddExpense}
+      />
+
+      {/* Edit modal */}
+      <ExpenseEditModal
+        expense={editingExpense}
+        visible={!!editingExpense}
+        timezone={timezone}
+        existingCategories={categories}
+        onClose={() => setEditingExpense(null)}
+        onSave={updateExpense}
+        onDelete={deleteExpense}
       />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  fab: {
+    shadowColor: "#14b8a6",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+});

@@ -138,6 +138,32 @@ export class ExpenseDao {
     );
   }
 
+  async findAll(userId: string): Promise<LocalExpense[]> {
+    return await this.db.getAllAsync<LocalExpense>(
+      `SELECT * FROM expenses
+       WHERE user_id = ? AND deleted_at IS NULL
+       ORDER BY occurred_at DESC`,
+      [userId]
+    );
+  }
+
+  async findDatesWithExpenses(
+    userId: string,
+    startDate: string,
+    endDate: string
+  ): Promise<string[]> {
+    const results = await this.db.getAllAsync<{ day: string }>(
+      `SELECT DISTINCT date(occurred_at) as day FROM expenses
+       WHERE user_id = ?
+         AND occurred_at >= ?
+         AND occurred_at < ?
+         AND deleted_at IS NULL
+       ORDER BY day`,
+      [userId, startDate, endDate]
+    );
+    return results.map((r) => r.day);
+  }
+
   async getUnsyncedCount(): Promise<number> {
     const result = await this.db.getFirstAsync<{ count: number }>(
       `SELECT COUNT(*) as count FROM expenses WHERE is_synced = 0`

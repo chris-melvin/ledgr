@@ -1,21 +1,32 @@
-import { MMKV } from "react-native-mmkv";
-
-export const storage = new MMKV({
-  id: "ledgr-storage",
-});
+import "expo-sqlite/localStorage/install";
 
 /**
- * Supabase-compatible storage adapter using MMKV.
- * MMKV is synchronous and ~30x faster than AsyncStorage.
+ * Storage wrapper using expo-sqlite localStorage polyfill.
+ * Synchronous API, works in Expo Go — no native build required.
+ */
+export const storage = {
+  getString: (key: string): string | undefined => {
+    return localStorage.getItem(key) ?? undefined;
+  },
+  set: (key: string, value: string): void => {
+    localStorage.setItem(key, value);
+  },
+  delete: (key: string): void => {
+    localStorage.removeItem(key);
+  },
+};
+
+/**
+ * Supabase-compatible storage adapter.
  */
 export const MMKVSupabaseAdapter = {
   getItem: (key: string): string | null => {
-    return storage.getString(key) ?? null;
+    return localStorage.getItem(key);
   },
   setItem: (key: string, value: string): void => {
-    storage.set(key, value);
+    localStorage.setItem(key, value);
   },
   removeItem: (key: string): void => {
-    storage.delete(key);
+    localStorage.removeItem(key);
   },
 };

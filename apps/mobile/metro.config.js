@@ -14,7 +14,4 @@ config.resolver.nodeModulesPaths = [
   path.resolve(monorepoRoot, "node_modules"),
 ];
 
-// Disable hierarchical lookup to avoid duplicate module resolution
-config.resolver.disableHierarchicalLookup = true;
-
 module.exports = withNativeWind(config, { input: "./global.css" });
