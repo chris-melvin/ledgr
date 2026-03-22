@@ -1,6 +1,7 @@
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Modal, Linking, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@/lib/theme/theme-context";
 
 interface UpgradePromptProps {
   visible: boolean;
@@ -9,24 +10,25 @@ interface UpgradePromptProps {
 }
 
 export function UpgradePrompt({ visible, feature, onClose }: UpgradePromptProps) {
+  const { colors } = useTheme();
   return (
     <Modal visible={visible} animationType="fade" transparent>
       <View className="flex-1 items-center justify-center px-6" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-        <View style={promptStyles.card}>
+        <View style={[promptStyles.card, { backgroundColor: colors.background, shadowColor: colors.textPrimary }]}>
           <View style={promptStyles.iconCircle}>
             <Ionicons name="star" size={24} color="#1A9E9E" />
           </View>
 
-          <Text style={promptStyles.title}>
+          <Text style={[promptStyles.title, { color: colors.textPrimary }]}>
             Unlock {feature}
           </Text>
-          <Text style={promptStyles.description}>
+          <Text style={[promptStyles.description, { color: colors.textSecondary }]}>
             Upgrade to Pro to access {feature.toLowerCase()} and all premium features.
           </Text>
 
           <TouchableOpacity
             onPress={() => {
-              // TODO: Integrate RevenueCat paywall
+              Linking.openURL("https://ledgr.ink/pricing");
               onClose();
             }}
             style={promptStyles.ctaButton}
@@ -41,7 +43,7 @@ export function UpgradePrompt({ visible, feature, onClose }: UpgradePromptProps)
           </TouchableOpacity>
 
           <TouchableOpacity onPress={onClose} style={promptStyles.laterButton}>
-            <Text style={promptStyles.laterText}>Maybe later</Text>
+            <Text style={[promptStyles.laterText, { color: colors.textTertiary }]}>Maybe later</Text>
           </TouchableOpacity>
         </View>
       </View>

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, StyleSheet, Switch } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { UpgradePrompt } from "@/components/subscription/upgrade-prompt";
+import { useTheme } from "@/lib/theme/theme-context";
 import {
   THEME_PRESETS,
   PRO_THEMES,
@@ -38,6 +40,8 @@ const MATERIAL_OPTIONS: { key: CardMaterial; label: string; pro: boolean }[] = [
 
 export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps) {
   const { settings, updateSetting, isPro } = useSettingsContext();
+  const { colors } = useTheme();
+  const [upgradeFeature, setUpgradeFeature] = useState<string | null>(null);
 
   let cardPrefs: CardPreferences = {};
   try {
@@ -59,19 +63,28 @@ export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps
   };
 
   const handleThemeSelect = (theme: CardTheme) => {
-    if (!isPro && isProFeature("theme", theme)) return;
+    if (!isPro && isProFeature("theme", theme)) {
+      setUpgradeFeature("Premium Themes");
+      return;
+    }
     selection();
     updatePrefs({ theme });
   };
 
   const handleBgSelect = (bg: BackgroundStyle) => {
-    if (!isPro && isProFeature("background", bg)) return;
+    if (!isPro && isProFeature("background", bg)) {
+      setUpgradeFeature("Shader Backgrounds");
+      return;
+    }
     selection();
     updatePrefs({ backgroundStyle: bg });
   };
 
   const handleMaterialSelect = (mat: CardMaterial) => {
-    if (!isPro && isProFeature("material", mat)) return;
+    if (!isPro && isProFeature("material", mat)) {
+      setUpgradeFeature("Premium Materials");
+      return;
+    }
     selection();
     updatePrefs({ material: mat });
   };
@@ -91,20 +104,20 @@ export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <TouchableOpacity className="flex-1" activeOpacity={1} onPress={onClose} />
-      <View style={sheetStyles.container}>
-        <View style={sheetStyles.handle} />
+      <View style={[sheetStyles.container, { backgroundColor: colors.background, shadowColor: colors.textPrimary }]}>
+        <View style={[sheetStyles.handle, { backgroundColor: colors.textMuted }]} />
         <ScrollView showsVerticalScrollIndicator={false}>
-          <Text style={sheetStyles.title}>Customize Card</Text>
+          <Text style={[sheetStyles.title, { color: colors.textPrimary }]}>Customize Card</Text>
 
           {/* Display Name */}
-          <Text style={sheetStyles.sectionLabel}>DISPLAY NAME</Text>
+          <Text style={[sheetStyles.sectionLabel, { color: colors.textTertiary }]}>DISPLAY NAME</Text>
           <TextInput
-            style={sheetStyles.nameInput}
+            style={[sheetStyles.nameInput, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
             value={displayName}
             onChangeText={setDisplayName}
             onBlur={handleDisplayNameBlur}
             placeholder="Your name (optional)"
-            placeholderTextColor="#A8A29E"
+            placeholderTextColor={colors.textTertiary}
             autoCapitalize="words"
           />
 
@@ -214,11 +227,17 @@ export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps
             />
           </View>
 
-          <TouchableOpacity onPress={onClose} style={sheetStyles.doneButton}>
-            <Text style={sheetStyles.doneButtonText}>Done</Text>
+          <TouchableOpacity onPress={onClose} style={[sheetStyles.doneButton, { backgroundColor: colors.surface }]}>
+            <Text style={[sheetStyles.doneButtonText, { color: colors.textSecondary }]}>Done</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
+
+      <UpgradePrompt
+        visible={!!upgradeFeature}
+        feature={upgradeFeature ?? ""}
+        onClose={() => setUpgradeFeature(null)}
+      />
     </Modal>
   );
 }
