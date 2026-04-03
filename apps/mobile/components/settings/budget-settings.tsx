@@ -9,23 +9,23 @@ export function BudgetSettings() {
   const dailyLimit = settings.calculated_daily_limit ?? settings.default_daily_limit;
 
   const [incomeText, setIncomeText] = useState(
-    String(settings.monthly_income ?? "")
+    String(settings.total_monthly_income ?? "")
   );
   const [fixedText, setFixedText] = useState(
-    String(settings.fixed_expenses ?? "")
+    String(settings.total_fixed_expenses ?? "")
   );
 
   const handleIncomeBlur = () => {
     const num = parseFloat(incomeText);
     if (!isNaN(num) && num > 0) {
-      updateSetting("monthly_income", num);
+      updateSetting("total_monthly_income", num);
     }
   };
 
   const handleFixedBlur = () => {
     const num = parseFloat(fixedText);
     if (!isNaN(num) && num >= 0) {
-      updateSetting("fixed_expenses", num);
+      updateSetting("total_fixed_expenses", num);
     }
   };
 

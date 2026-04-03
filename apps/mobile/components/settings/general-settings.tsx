@@ -150,8 +150,8 @@ export function GeneralSettings() {
         <ToggleRow
           label="Show Savings"
           description="Show savings in budget allocation"
-          value={settings.show_savings ?? false}
-          onToggle={(v) => updateSetting("show_savings", v)}
+          value={settings.show_savings_in_allocation ?? false}
+          onToggle={(v) => updateSetting("show_savings_in_allocation", v)}
         />
       </SettingsSection>
 

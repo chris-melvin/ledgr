@@ -15,13 +15,6 @@ export function DataSettings() {
     Alert.alert("Coming Soon", "CSV import will be available in a future update.");
   };
 
-  const handleResetOnboarding = () => {
-    Alert.alert("Reset Onboarding", "This will show the onboarding flow again on next app launch.", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Reset", style: "destructive", onPress: () => { /* TODO: implement */ } },
-    ]);
-  };
-
   return (
     <>
       {/* Sync */}
@@ -96,14 +89,6 @@ export function DataSettings() {
         </TouchableOpacity>
       </SettingsSection>
 
-      {/* Danger Zone */}
-      <SettingsSection title="DANGER ZONE">
-        <TouchableOpacity onPress={handleResetOnboarding} style={styles.actionRow}>
-          <Ionicons name="refresh-outline" size={18} color="#57534E" />
-          <Text style={styles.actionLabel}>Reset Onboarding</Text>
-          <Ionicons name="chevron-forward" size={16} color="#A8A29E" style={{ marginLeft: "auto" }} />
-        </TouchableOpacity>
-      </SettingsSection>
     </>
   );
 }

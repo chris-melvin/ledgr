@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSQLiteContext } from "expo-sqlite";
+import uuid from "react-native-uuid";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useSync } from "@/components/providers/sync-provider";
 import { storage } from "@/lib/storage/mmkv";
@@ -18,6 +19,7 @@ export interface UserSettings {
   total_fixed_expenses: number | null;
   calculated_daily_limit: number | null;
   budget_setup_completed: boolean;
+  show_savings_in_allocation: boolean;
 }
 
 const SETTINGS_MMKV_KEY = "user_settings";
@@ -34,6 +36,7 @@ const DEFAULT_SETTINGS: Omit<UserSettings, "id" | "user_id"> = {
   total_fixed_expenses: null,
   calculated_daily_limit: null,
   budget_setup_completed: false,
+  show_savings_in_allocation: true,
 };
 
 function loadFromMMKV(): UserSettings | null {
@@ -77,6 +80,7 @@ export function useSettings() {
       total_fixed_expenses: number | null;
       calculated_daily_limit: number | null;
       budget_setup_completed: number;
+      show_savings_in_allocation: number;
     }>(
       `SELECT * FROM user_settings WHERE user_id = ?`,
       [user.id]
@@ -97,6 +101,7 @@ export function useSettings() {
         total_fixed_expenses: row.total_fixed_expenses,
         calculated_daily_limit: row.calculated_daily_limit,
         budget_setup_completed: row.budget_setup_completed === 1,
+        show_savings_in_allocation: row.show_savings_in_allocation === 1,
       };
       setSettings(parsed);
       saveToMMKV(parsed);
@@ -108,9 +113,33 @@ export function useSettings() {
     refresh();
   }, [refresh]);
 
+  // Ensure a user_settings row exists, creating one if needed.
+  // Returns the row id, or null if no user is logged in.
+  const ensureRow = useCallback(async (): Promise<string | null> => {
+    if (!user) return null;
+    const existing = await db.getFirstAsync<{ id: string }>(
+      `SELECT id FROM user_settings WHERE user_id = ?`,
+      [user.id]
+    );
+    if (existing) return existing.id;
+
+    const id = uuid.v4() as string;
+    const now = new Date().toISOString();
+    await db.runAsync(
+      `INSERT INTO user_settings (id, user_id, default_daily_limit, currency, timezone, week_starts_on, tracking_mode, subscription_tier, card_preferences, created_at, updated_at, is_synced)
+       VALUES (?, ?, 300, 'PHP', 'Asia/Manila', 0, 'tracking_only', 'free', '{}', ?, ?, 0)`,
+      [id, user.id, now, now]
+    );
+    await refresh();
+    return id;
+  }, [db, user, refresh]);
+
   const updateSetting = useCallback(
     async (key: keyof Omit<UserSettings, "id" | "user_id">, value: string | number | boolean) => {
-      if (!user || !settings) return;
+      if (!user) return;
+
+      const rowId = await ensureRow();
+      if (!rowId) return;
 
       const sqlValue = typeof value === "boolean" ? (value ? 1 : 0) : value;
       const now = new Date().toISOString();
@@ -131,14 +160,14 @@ export function useSettings() {
            VALUES ('user_settings', ?, 'update', ?, ?)
            ON CONFLICT(entity_type, entity_id, operation) DO UPDATE SET
              payload = excluded.payload, created_at = excluded.created_at, retry_count = 0`,
-          [settings.id, JSON.stringify(updated), now]
+          [rowId, JSON.stringify(updated), now]
         );
       }
 
       await refresh();
       sync();
     },
-    [db, user, settings, refresh, sync]
+    [db, user, ensureRow, refresh, sync]
   );
 
   // Provide defaults when no settings are synced yet

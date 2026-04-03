@@ -8,10 +8,16 @@ import {
   isDarkTheme,
   getGreeting,
   type CardTheme,
+  type BackgroundStyle,
   type BudgetStatus,
   type CardPreferences,
 } from "@repo/shared/card-theme";
+import { useTheme } from "@/lib/theme/theme-context";
 import { CardCustomizeSheet } from "./hero-card/card-customize-sheet";
+
+// Dark-mode friendly defaults when theme is "auto" (replaces flat grey neutrals)
+const AUTO_DARK_COLORS = ["#0F2B2B", "#0D3D3D", "#115E5E", "#1A9E9E"];
+const AUTO_LIGHT_COLORS = ["#E0F5F0", "#B2ECE0", "#7DD3C4", "#34B8A0"];
 
 interface HeroDailyCardProps {
   spent: number;
@@ -52,6 +58,7 @@ export function HeroDailyCard({
   }
 
   const theme: CardTheme = cardPrefs.theme ?? "auto";
+  const bgStyle: BackgroundStyle = cardPrefs.backgroundStyle ?? "static";
   const displayName = cardPrefs.displayName || "";
 
   const ratio = spent / limit;
@@ -60,8 +67,15 @@ export function HeroDailyCard({
   else if (ratio >= 0.85) status = "low";
   else if (ratio >= 0.65) status = "close";
 
-  const themeColors = getThemeColors(theme, status, isBudgetMode);
-  const dark = isDarkTheme(theme);
+  const { colorScheme } = useTheme();
+  const isDark = colorScheme === "dark";
+
+  // Use brand teal colors for "auto" instead of flat grey neutrals
+  const themeColors =
+    theme === "auto" && !isBudgetMode
+      ? isDark ? AUTO_DARK_COLORS : AUTO_LIGHT_COLORS
+      : getThemeColors(theme, status, isBudgetMode);
+  const dark = theme === "auto" ? isDark : isDarkTheme(theme);
   const isOver = remaining < 0;
   const progress = Math.min(spent / limit, 1);
 
@@ -93,12 +107,53 @@ export function HeroDailyCard({
           { borderWidth: 1, borderColor: dark ? "transparent" : "rgba(231,229,228,0.6)" },
         ]}
       >
+        {/* Background layers based on style */}
         <LinearGradient
           colors={[themeColors[0], themeColors[1], themeColors[2] ?? themeColors[1]]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFill}
         />
+        {bgStyle === "mesh" && (
+          <>
+            <LinearGradient
+              colors={[
+                themeColors[2] ?? themeColors[1],
+                "transparent",
+                themeColors[0],
+              ]}
+              start={{ x: 1, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={[StyleSheet.absoluteFill, { opacity: 0.6 }]}
+            />
+            <LinearGradient
+              colors={["transparent", themeColors[3] ?? themeColors[1], "transparent"]}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 1 }}
+              style={[StyleSheet.absoluteFill, { opacity: 0.4 }]}
+            />
+          </>
+        )}
+        {bgStyle === "grain" && (
+          <>
+            <LinearGradient
+              colors={[
+                themeColors[1],
+                "transparent",
+                themeColors[2] ?? themeColors[1],
+              ]}
+              start={{ x: 0.8, y: 0 }}
+              end={{ x: 0.2, y: 1 }}
+              style={[StyleSheet.absoluteFill, { opacity: 0.5 }]}
+            />
+            <View
+              style={[
+                StyleSheet.absoluteFill,
+                { backgroundColor: dark ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.2)" },
+              ]}
+            />
+          </>
+        )}
 
         <View className="relative p-6">
           {/* Greeting */}

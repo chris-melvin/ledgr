@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
+import { useTheme } from "@/lib/theme/theme-context";
 
 interface LogoProps {
   size?: "sm" | "md" | "lg";
   showText?: boolean;
-  variant?: "default" | "white";
+  variant?: "light" | "dark" | "white";
 }
 
 const sizeMap = {
@@ -13,11 +14,12 @@ const sizeMap = {
 };
 
 const variantMap = {
-  default: { lines: "#0D9488", accent: "#292524", text: "#1C1917" },
+  light: { lines: "#0D9488", accent: "#292524", text: "#1C1917" },
+  dark: { lines: "#0D9488", accent: "#D6D3D1", text: "#F5F5F3" },
   white: { lines: "rgba(255,255,255,0.8)", accent: "#FFFFFF", text: "#FFFFFF" },
 };
 
-function LedgerLinesIcon({ size, variant }: { size: keyof typeof sizeMap; variant: keyof typeof variantMap }) {
+function LedgerLinesIcon({ size, variant }: { size: keyof typeof sizeMap; variant: "light" | "dark" | "white" }) {
   const s = sizeMap[size];
   const v = variantMap[variant];
   const pad = s.iconSize * 0.15;
@@ -33,13 +35,15 @@ function LedgerLinesIcon({ size, variant }: { size: keyof typeof sizeMap; varian
   );
 }
 
-export function LedgrLogo({ size = "md", showText = true, variant = "default" }: LogoProps) {
+export function LedgrLogo({ size = "md", showText = true, variant }: LogoProps) {
+  const { colorScheme } = useTheme();
+  const resolved = variant ?? (colorScheme === "dark" ? "dark" : "light");
   const s = sizeMap[size];
-  const v = variantMap[variant];
+  const v = variantMap[resolved];
 
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: s.gap }}>
-      <LedgerLinesIcon size={size} variant={variant} />
+      <LedgerLinesIcon size={size} variant={resolved} />
       {showText && (
         <Text style={{ fontFamily: "Lora_700Bold", fontSize: s.text, color: v.text, letterSpacing: -0.5 }}>
           ledgr
@@ -49,6 +53,6 @@ export function LedgrLogo({ size = "md", showText = true, variant = "default" }:
   );
 }
 
-export function LedgrLogoIcon({ size = "md", variant = "default" }: Omit<LogoProps, "showText">) {
+export function LedgrLogoIcon({ size = "md", variant }: Omit<LogoProps, "showText">) {
   return <LedgrLogo size={size} variant={variant} showText={false} />;
 }

@@ -21,14 +21,9 @@ interface CardCustomizeSheetProps {
 }
 
 const BACKGROUND_OPTIONS: { key: BackgroundStyle; label: string; pro: boolean }[] = [
-  { key: "static", label: "Static", pro: false },
-  { key: "mesh", label: "Mesh", pro: false },
-  { key: "grain", label: "Grain", pro: false },
-  { key: "neuro", label: "Neuro", pro: true },
-  { key: "metaballs", label: "Meta", pro: true },
-  { key: "godrays", label: "Rays", pro: true },
-  { key: "swirl", label: "Swirl", pro: true },
-  { key: "waves", label: "Waves", pro: true },
+  { key: "static", label: "Gradient", pro: false },
+  { key: "mesh", label: "Layered", pro: false },
+  { key: "grain", label: "Soft", pro: false },
 ];
 
 const MATERIAL_OPTIONS: { key: CardMaterial; label: string; pro: boolean }[] = [
@@ -72,7 +67,7 @@ export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps
   };
 
   const handleBgSelect = (bg: BackgroundStyle) => {
-    if (!isPro && isProFeature("background", bg)) {
+    if (!isPro && isProFeature("backgroundStyle", bg)) {
       setUpgradeFeature("Shader Backgrounds");
       return;
     }
