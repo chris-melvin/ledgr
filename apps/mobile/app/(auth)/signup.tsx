@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Linking,
   StyleSheet,
 } from "react-native";
 import { Link } from "expo-router";
@@ -126,6 +127,17 @@ export default function SignUpScreen() {
             <Text style={authStyles.linkAction}>Sign In</Text>
           </Link>
         </View>
+
+        <Text style={[authStyles.legalFooter, { color: colors.textTertiary }]}>
+          By signing up, you agree to our{" "}
+          <Text style={authStyles.legalLink} onPress={() => Linking.openURL("https://ledgr.ink/terms")}>
+            Terms
+          </Text>
+          {" "}and{" "}
+          <Text style={authStyles.legalLink} onPress={() => Linking.openURL("https://ledgr.ink/privacy")}>
+            Privacy Policy
+          </Text>
+        </Text>
       </View>
     </KeyboardAvoidingView>
   );
@@ -201,5 +213,16 @@ const authStyles = StyleSheet.create({
     color: "#A8A29E",
     paddingHorizontal: 12,
     textTransform: "uppercase",
+  },
+  legalFooter: {
+    fontFamily: "Inter_400Regular",
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: 16,
+    lineHeight: 18,
+  },
+  legalLink: {
+    color: "#1A9E9E",
+    fontFamily: "Inter_500Medium",
   },
 });

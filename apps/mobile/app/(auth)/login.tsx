@@ -15,6 +15,7 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useTheme } from "@/lib/theme/theme-context";
 import { LedgrLogo } from "@/components/brand/logo";
+import { supabase } from "@/lib/supabase/client";
 
 export default function LoginScreen() {
   const { signIn, signInWithApple } = useAuth();
@@ -35,6 +36,53 @@ export default function LoginScreen() {
 
     if (error) {
       Alert.alert("Error", error.message);
+    }
+  };
+
+  const handleForgotPassword = () => {
+    if (Platform.OS === "ios") {
+      Alert.prompt(
+        "Reset Password",
+        "Enter your email address and we'll send you a reset link.",
+        async (inputEmail) => {
+          if (!inputEmail) return;
+          await supabase.auth.resetPasswordForEmail(inputEmail, {
+            redirectTo: "https://ledgr.ink/reset-password",
+          });
+          Alert.alert(
+            "Check Your Email",
+            "If an account exists with that email, we've sent a password reset link."
+          );
+        },
+        "plain-text",
+        email,
+        "email-address"
+      );
+    } else {
+      // Android fallback — use the email already entered
+      if (!email) {
+        Alert.alert("Enter Email", "Please enter your email address first, then tap Forgot Password.");
+        return;
+      }
+      Alert.alert(
+        "Reset Password",
+        `Send a password reset link to ${email}?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Send",
+            onPress: async () => {
+              await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: "https://ledgr.ink/reset-password",
+              });
+              Alert.alert(
+                "Check Your Email",
+                "If an account exists with that email, we've sent a password reset link."
+              );
+            },
+          },
+        ]
+      );
     }
   };
 
@@ -64,7 +112,7 @@ export default function LoginScreen() {
         />
 
         <TextInput
-          style={[authStyles.input, { marginBottom: 24, backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
+          style={[authStyles.input, { marginBottom: 12, backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
           placeholder="Password"
           placeholderTextColor={colors.textTertiary}
           value={password}
@@ -72,6 +120,13 @@ export default function LoginScreen() {
           secureTextEntry
           autoComplete="password"
         />
+
+        <TouchableOpacity
+          onPress={handleForgotPassword}
+          style={{ alignSelf: "flex-end", marginBottom: 24 }}
+        >
+          <Text style={authStyles.linkAction}>Forgot Password?</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           onPress={handleLogin}

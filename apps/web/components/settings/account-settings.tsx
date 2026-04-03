@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { LogOut, Crown, AlertTriangle } from "lucide-react";
@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { signOut } from "@/actions/auth";
+import { signOut, deleteAccount } from "@/actions/auth";
 import { getPortalUrl, cancelSubscription, resumeSubscription } from "@/actions/subscriptions";
 import type { SubscriptionInfo } from "@/actions/subscriptions/get-subscription";
 
@@ -23,6 +24,8 @@ interface AccountSettingsProps {
 
 export function AccountSettings({ userEmail, subscription }: AccountSettingsProps) {
   const [isPending, startTransition] = useTransition();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
   const handleSignOut = () => {
     startTransition(async () => {
@@ -214,18 +217,70 @@ export function AccountSettings({ userEmail, subscription }: AccountSettingsProp
           <Separator />
 
           {/* Danger Zone */}
-          <div className="space-y-3 opacity-60">
+          <div className="space-y-3">
             <div className="flex items-center gap-2 text-rose-600">
               <AlertTriangle className="w-4 h-4" />
               <p className="text-sm font-medium">Danger Zone</p>
-              <Badge variant="outline" className="text-xs font-normal">Coming Soon</Badge>
             </div>
-            <Button variant="destructive" className="w-full" disabled>
+            <Button
+              variant="destructive"
+              className="w-full"
+              onClick={() => setShowDeleteDialog(true)}
+              disabled={isPending}
+            >
               Delete Account
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={showDeleteDialog} onOpenChange={(open) => {
+        setShowDeleteDialog(open);
+        if (!open) setDeleteConfirmation("");
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Account</DialogTitle>
+            <DialogDescription>
+              This will permanently delete your account and all your data including expenses,
+              settings, and budget information. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="delete-confirm">
+              Type <span className="font-semibold">DELETE</span> to confirm
+            </Label>
+            <Input
+              id="delete-confirm"
+              value={deleteConfirmation}
+              onChange={(e) => setDeleteConfirmation(e.target.value)}
+              placeholder="DELETE"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteConfirmation !== "DELETE" || isPending}
+              onClick={() => {
+                startTransition(async () => {
+                  const result = await deleteAccount();
+                  if (result.success) {
+                    window.location.href = "/login";
+                  } else {
+                    toast.error(result.error ?? "Failed to delete account");
+                    setShowDeleteDialog(false);
+                  }
+                });
+              }}
+            >
+              {isPending ? "Deleting..." : "Delete Account"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
