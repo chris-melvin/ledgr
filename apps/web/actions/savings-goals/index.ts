@@ -8,10 +8,20 @@ import {
 } from "@/lib/repositories";
 import type { SavingsGoal, SavingsTransaction } from "@repo/database";
 
-export interface GoalWithProgress extends SavingsGoal {
+export interface GoalWithProgress {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currentBalance: number;
+  targetTimestamp: string | null;
+  icon: string | null;
+  color: string | null;
+  isHidden: boolean;
   progressPercentage: number;
   isCompleted: boolean;
   remainingAmount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**
@@ -26,10 +36,19 @@ export async function getSavingsGoals(): Promise<ActionResult<GoalWithProgress[]
     const goals = await savingsGoalRepository.findActive(supabase, userId);
 
     const goalsWithProgress: GoalWithProgress[] = goals.map((goal) => ({
-      ...goal,
+      id: goal.id,
+      name: goal.name,
+      targetAmount: Number(goal.target_amount),
+      currentBalance: Number(goal.current_balance),
+      targetTimestamp: goal.target_timestamp,
+      icon: goal.icon,
+      color: goal.color,
+      isHidden: goal.is_hidden,
       progressPercentage: savingsGoalRepository.getProgressPercentage(goal),
       isCompleted: savingsGoalRepository.isCompleted(goal),
       remainingAmount: Math.max(0, Number(goal.target_amount) - Number(goal.current_balance)),
+      createdAt: goal.created_at,
+      updatedAt: goal.updated_at,
     }));
 
     return success(goalsWithProgress);
@@ -56,10 +75,19 @@ export async function getSavingsGoal(
     }
 
     return success({
-      ...goal,
+      id: goal.id,
+      name: goal.name,
+      targetAmount: Number(goal.target_amount),
+      currentBalance: Number(goal.current_balance),
+      targetTimestamp: goal.target_timestamp,
+      icon: goal.icon,
+      color: goal.color,
+      isHidden: goal.is_hidden,
       progressPercentage: savingsGoalRepository.getProgressPercentage(goal),
       isCompleted: savingsGoalRepository.isCompleted(goal),
       remainingAmount: Math.max(0, Number(goal.target_amount) - Number(goal.current_balance)),
+      createdAt: goal.created_at,
+      updatedAt: goal.updated_at,
     });
   } catch (err) {
     console.error("Failed to get savings goal:", err);

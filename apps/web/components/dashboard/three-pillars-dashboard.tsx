@@ -104,7 +104,7 @@ export function ThreePillarsDashboard() {
       setCreateGoalOpen(false);
       loadData();
     } else {
-      toast.error(result.error?.message || "Failed to create goal");
+      toast.error(result.error || "Failed to create goal");
     }
   };
 
@@ -121,7 +121,7 @@ export function ThreePillarsDashboard() {
       setContributeDialog({ open: false, goal: null });
       loadData();
     } else {
-      toast.error(result.error?.message || "Failed to contribute");
+      toast.error(result.error || "Failed to contribute");
     }
   };
 
@@ -148,7 +148,7 @@ export function ThreePillarsDashboard() {
       setCreateAccountOpen(false);
       loadData();
     } else {
-      toast.error(result.error?.message || "Failed to add account");
+      toast.error(result.error || "Failed to add account");
     }
   };
 
@@ -162,7 +162,7 @@ export function ThreePillarsDashboard() {
       setUpdateBalanceDialog({ open: false, account: null });
       loadData();
     } else {
-      toast.error(result.error?.message || "Failed to update balance");
+      toast.error(result.error || "Failed to update balance");
     }
   };
 

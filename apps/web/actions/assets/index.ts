@@ -5,7 +5,17 @@ import { type ActionResult, error, success } from "@/lib/errors";
 import { assetRepository } from "@/lib/repositories";
 import type { Asset, AssetType } from "@repo/database";
 
-export interface AccountWithType extends Asset {
+export interface AccountWithType {
+  id: string;
+  name: string;
+  type: AssetType;
+  balance: number;
+  institution: string | null;
+  accountNumber: string | null;
+  notes: string | null;
+  isLiquid: boolean;
+  createdAt: string;
+  updatedAt: string;
   displayType: string;
 }
 
@@ -31,7 +41,16 @@ export async function getAssets(): Promise<ActionResult<AccountWithType[]>> {
     const assets = await assetRepository.findAll(supabase, userId);
 
     const accounts: AccountWithType[] = assets.map((asset) => ({
-      ...asset,
+      id: asset.id,
+      name: asset.name,
+      type: asset.type,
+      balance: Number(asset.balance),
+      institution: asset.institution,
+      accountNumber: asset.account_number,
+      notes: asset.notes,
+      isLiquid: asset.is_liquid,
+      createdAt: asset.created_at,
+      updatedAt: asset.updated_at,
       displayType: typeDisplayNames[asset.type],
     }));
 
