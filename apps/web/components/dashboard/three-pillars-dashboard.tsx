@@ -223,7 +223,7 @@ export function ThreePillarsDashboard() {
         <AccountsSummaryCard
           totalBalance={summary?.totalBalance || 0}
           liquidBalance={accounts
-            .filter((a) => a.is_liquid)
+            .filter((a) => a.isLiquid)
             .reduce((sum, a) => sum + a.balance, 0)}
           investmentBalance={accounts
             .filter((a) => a.type === "investment" || a.type === "retirement")
