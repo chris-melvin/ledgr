@@ -77,12 +77,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     refresh();
   }, [refresh]);
 
-  const isPro =
-    subscription?.status === "active" || subscription?.status === "trialing";
+  // All features unlocked — no paywall
+  const isPro = true;
 
   const canAccess = useCallback(
-    (_feature: ProFeature) => isPro,
-    [isPro]
+    (_feature: ProFeature) => true,
+    []
   );
 
   return (

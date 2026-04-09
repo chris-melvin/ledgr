@@ -209,6 +209,6 @@ export function useSettings() {
     isLoading,
     refresh,
     updateSetting,
-    isPro: resolvedSettings.subscription_tier === "pro",
+    isPro: true, // All features unlocked — no paywall
   };
 }

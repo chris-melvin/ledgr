@@ -1,12 +1,8 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, StyleSheet, Switch } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { UpgradePrompt } from "@/components/subscription/upgrade-prompt";
 import { useTheme } from "@/lib/theme/theme-context";
 import {
   THEME_PRESETS,
-  PRO_THEMES,
-  isProFeature,
   type CardTheme,
   type CardPreferences,
   type BackgroundStyle,
@@ -20,23 +16,22 @@ interface CardCustomizeSheetProps {
   onClose: () => void;
 }
 
-const BACKGROUND_OPTIONS: { key: BackgroundStyle; label: string; pro: boolean }[] = [
-  { key: "static", label: "Gradient", pro: false },
-  { key: "mesh", label: "Layered", pro: false },
-  { key: "grain", label: "Soft", pro: false },
+const BACKGROUND_OPTIONS: { key: BackgroundStyle; label: string }[] = [
+  { key: "static", label: "Gradient" },
+  { key: "mesh", label: "Layered" },
+  { key: "grain", label: "Soft" },
 ];
 
-const MATERIAL_OPTIONS: { key: CardMaterial; label: string; pro: boolean }[] = [
-  { key: "default", label: "Default", pro: false },
-  { key: "glass", label: "Glass", pro: true },
-  { key: "metallic", label: "Metal", pro: true },
-  { key: "holo", label: "Holo", pro: true },
+const MATERIAL_OPTIONS: { key: CardMaterial; label: string }[] = [
+  { key: "default", label: "Default" },
+  { key: "glass", label: "Glass" },
+  { key: "metallic", label: "Metal" },
+  { key: "holo", label: "Holo" },
 ];
 
 export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps) {
-  const { settings, updateSetting, isPro } = useSettingsContext();
+  const { settings, updateSetting } = useSettingsContext();
   const { colors } = useTheme();
-  const [upgradeFeature, setUpgradeFeature] = useState<string | null>(null);
 
   let cardPrefs: CardPreferences = {};
   try {
@@ -58,28 +53,16 @@ export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps
   };
 
   const handleThemeSelect = (theme: CardTheme) => {
-    if (!isPro && isProFeature("theme", theme)) {
-      setUpgradeFeature("Premium Themes");
-      return;
-    }
     selection();
     updatePrefs({ theme });
   };
 
   const handleBgSelect = (bg: BackgroundStyle) => {
-    if (!isPro && isProFeature("backgroundStyle", bg)) {
-      setUpgradeFeature("Shader Backgrounds");
-      return;
-    }
     selection();
     updatePrefs({ backgroundStyle: bg });
   };
 
   const handleMaterialSelect = (mat: CardMaterial) => {
-    if (!isPro && isProFeature("material", mat)) {
-      setUpgradeFeature("Premium Materials");
-      return;
-    }
     selection();
     updatePrefs({ material: mat });
   };
@@ -129,7 +112,6 @@ export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps
             </TouchableOpacity>
             {allThemes.filter((t) => t.key !== "auto").map(({ key, theme }) => {
               const preset = THEME_PRESETS[theme as Exclude<CardTheme, "auto">];
-              const isLocked = !isPro && PRO_THEMES.includes(theme);
               const isSelected = currentTheme === theme;
               return (
                 <TouchableOpacity
@@ -138,13 +120,7 @@ export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps
                   className="mr-3 items-center"
                   style={{ opacity: isSelected ? 1 : 0.6 }}
                 >
-                  <View style={[sheetStyles.swatch, { backgroundColor: preset?.swatch }, isSelected && sheetStyles.swatchSelected]}>
-                    {isLocked && (
-                      <View className="absolute inset-0 items-center justify-center">
-                        <Ionicons name="lock-closed" size={12} color="rgba(255,255,255,0.8)" />
-                      </View>
-                    )}
-                  </View>
+                  <View style={[sheetStyles.swatch, { backgroundColor: preset?.swatch }, isSelected && sheetStyles.swatchSelected]} />
                   <Text style={sheetStyles.swatchLabel}>{preset?.label}</Text>
                 </TouchableOpacity>
               );
@@ -156,7 +132,6 @@ export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
             {BACKGROUND_OPTIONS.map((opt) => {
               const isSelected = currentBg === opt.key;
-              const isLocked = !isPro && opt.pro;
               return (
                 <TouchableOpacity
                   key={opt.key}
@@ -168,7 +143,6 @@ export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps
                     <Text style={[sheetStyles.optionPillText, isSelected && sheetStyles.optionPillTextActive]}>
                       {opt.label}
                     </Text>
-                    {isLocked && <Ionicons name="lock-closed" size={9} color="#A8A29E" style={{ marginLeft: 3 }} />}
                   </View>
                 </TouchableOpacity>
               );
@@ -180,7 +154,6 @@ export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
             {MATERIAL_OPTIONS.map((opt) => {
               const isSelected = currentMaterial === opt.key;
-              const isLocked = !isPro && opt.pro;
               return (
                 <TouchableOpacity
                   key={opt.key}
@@ -192,7 +165,6 @@ export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps
                     <Text style={[sheetStyles.optionPillText, isSelected && sheetStyles.optionPillTextActive]}>
                       {opt.label}
                     </Text>
-                    {isLocked && <Ionicons name="lock-closed" size={9} color="#A8A29E" style={{ marginLeft: 3 }} />}
                   </View>
                 </TouchableOpacity>
               );
@@ -228,11 +200,6 @@ export function CardCustomizeSheet({ visible, onClose }: CardCustomizeSheetProps
         </ScrollView>
       </View>
 
-      <UpgradePrompt
-        visible={!!upgradeFeature}
-        feature={upgradeFeature ?? ""}
-        onClose={() => setUpgradeFeature(null)}
-      />
     </Modal>
   );
 }

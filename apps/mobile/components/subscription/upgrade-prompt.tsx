@@ -1,5 +1,4 @@
-import { View, Text, TouchableOpacity, Modal, Linking, StyleSheet } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/lib/theme/theme-context";
 
@@ -26,24 +25,8 @@ export function UpgradePrompt({ visible, feature, onClose }: UpgradePromptProps)
             Upgrade to Pro to access {feature.toLowerCase()} and all premium features.
           </Text>
 
-          <TouchableOpacity
-            onPress={() => {
-              Linking.openURL("https://ledgr.ink/pricing");
-              onClose();
-            }}
-            style={promptStyles.ctaButton}
-          >
-            <LinearGradient
-              colors={["#1A9E9E", "#0F6B6B"]}
-              style={StyleSheet.absoluteFill}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            />
-            <Text style={promptStyles.ctaText}>Upgrade to Pro</Text>
-          </TouchableOpacity>
-
           <TouchableOpacity onPress={onClose} style={promptStyles.laterButton}>
-            <Text style={[promptStyles.laterText, { color: colors.textTertiary }]}>Maybe later</Text>
+            <Text style={[promptStyles.laterText, { color: colors.textTertiary }]}>OK</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -88,24 +71,6 @@ const promptStyles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 24,
     lineHeight: 22,
-  },
-  ctaButton: {
-    borderRadius: 14,
-    paddingVertical: 16,
-    alignItems: "center",
-    width: "100%",
-    overflow: "hidden",
-    marginBottom: 12,
-    shadowColor: "#1A9E9E",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  ctaText: {
-    fontFamily: "Inter_600SemiBold",
-    fontSize: 16,
-    color: "#FFFFFF",
   },
   laterButton: {
     paddingVertical: 8,
