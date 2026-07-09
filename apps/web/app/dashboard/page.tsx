@@ -2,8 +2,19 @@ import { redirect } from "next/navigation";
 import { getAuthUser } from "@/lib/supabase/server";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { TimezoneProvider } from "@/components/providers";
-import { settingsRepository } from "@/lib/repositories";
-import type { Expense, UserSettings } from "@repo/database";
+import {
+  settingsRepository,
+  budgetBucketRepository,
+  ledgerEventRepository,
+} from "@/lib/repositories";
+import { getSpendingStats } from "@/actions/ledger";
+import type {
+  BudgetBucket,
+  Expense,
+  LedgerEvent,
+  UserSettings,
+} from "@repo/database";
+import type { SpendingStats } from "@/actions/ledger";
 import type { CardPreferences } from "@/components/dashboard/hero-card/card-theme";
 import * as dateUtils from "@/lib/utils/date";
 
@@ -48,6 +59,39 @@ export default async function DashboardPage() {
     expenses = data as Expense[];
   }
 
+  // Tracking mode: buckets, ledger events, and spending stats (spending-clarity)
+  const trackingMode = userSettings?.tracking_mode ?? "tracking_only";
+  let buckets: BudgetBucket[] = [];
+  let ledgerEvents: LedgerEvent[] = [];
+  let initialStats: SpendingStats | null = null;
+
+  if (trackingMode === "tracking_only") {
+    try {
+      buckets = await budgetBucketRepository.ensureTrackingBuckets(
+        supabase,
+        user.id
+      );
+      ledgerEvents = await ledgerEventRepository.findInRange(
+        supabase,
+        user.id,
+        prevMonthStart,
+        monthEnd
+      );
+      const statsResult = await getSpendingStats();
+      if (statsResult.success) {
+        initialStats = statsResult.data;
+      }
+    } catch (err) {
+      console.warn("Tracking data not available:", err);
+    }
+  } else {
+    try {
+      buckets = await budgetBucketRepository.findAllOrdered(supabase, user.id);
+    } catch (err) {
+      console.warn("Buckets not available:", err);
+    }
+  }
+
   // Extract card preferences from settings (JSONB column, defaults to {})
   const cardPreferences = (userSettings?.card_preferences ?? {}) as CardPreferences;
 
@@ -56,8 +100,11 @@ export default async function DashboardPage() {
       <DashboardClient
         initialExpenses={expenses}
         dailyLimit={userSettings?.default_daily_limit}
-        trackingMode={userSettings?.tracking_mode ?? "tracking_only"}
+        trackingMode={trackingMode}
         cardPreferences={cardPreferences}
+        buckets={buckets}
+        initialLedgerEvents={ledgerEvents}
+        initialStats={initialStats}
       />
     </TimezoneProvider>
   );

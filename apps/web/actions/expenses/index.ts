@@ -1,5 +1,5 @@
 // Mutations
-export { createExpense, createExpenseFromData } from "./create";
+export { createExpense, createExpenseFromData, createExpensesBatch } from "./create";
 export { updateExpense, updateExpenseFromData } from "./update";
 export { deleteExpense, deleteExpenses } from "./delete";
 export { exportExpensesCSV } from "./export";

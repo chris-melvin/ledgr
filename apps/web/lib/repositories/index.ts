@@ -23,6 +23,9 @@ export { feedbackRepository } from "./feedback.repository";
 export { roadmapRepository } from "./roadmap.repository";
 export { roadmapVoteRepository } from "./roadmap-vote.repository";
 
+// Ledger events (running balance)
+export { ledgerEventRepository } from "./ledger-event.repository";
+
 // Savings goals
 export { savingsGoalRepository } from "./savings-goal.repository";
 export { savingsTransactionRepository } from "./savings-transaction.repository";

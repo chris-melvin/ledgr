@@ -246,6 +246,65 @@ class BudgetBucketRepository extends BaseRepository<
   }
 
   /**
+   * Ensure the three tracking buckets exist for a tracking-only user.
+   * Idempotent: only inserts buckets whose slug is missing.
+   * Daily is the default bucket and the only one feeding daily averages.
+   */
+  async ensureTrackingBuckets(
+    supabase: SupabaseClient,
+    userId: string
+  ): Promise<BudgetBucket[]> {
+    const existing = await this.findAllOrdered(supabase, userId);
+    const existingSlugs = new Set(existing.map((b) => b.slug));
+    const hasDefault = existing.some((b) => b.is_default);
+
+    const trackingBuckets: BudgetBucketInsert[] = [
+      {
+        user_id: userId,
+        name: "Daily",
+        slug: "daily",
+        description: "Everyday spending — feeds your daily average",
+        color: "#3b82f6",
+        icon: "Wallet",
+        is_default: !hasDefault,
+        is_system: true,
+        include_in_daily_avg: true,
+        sort_order: existing.length,
+      },
+      {
+        user_id: userId,
+        name: "Bills",
+        slug: "bills",
+        description: "Rent, utilities, subscriptions — excluded from daily average",
+        color: "#f59e0b",
+        icon: "Receipt",
+        is_default: false,
+        is_system: true,
+        include_in_daily_avg: false,
+        sort_order: existing.length + 1,
+      },
+      {
+        user_id: userId,
+        name: "Non-daily",
+        slug: "non-daily",
+        description: "Clothes, gear, irregular buys — excluded from daily average",
+        color: "#8b5cf6",
+        icon: "ShoppingBag",
+        is_default: false,
+        is_system: true,
+        include_in_daily_avg: false,
+        sort_order: existing.length + 2,
+      },
+    ];
+
+    const missing = trackingBuckets.filter((b) => !existingSlugs.has(b.slug));
+    if (missing.length === 0) return existing;
+
+    const created = await this.createMany(supabase, missing);
+    return [...existing, ...created];
+  }
+
+  /**
    * Create a single bucket from a suggestion template
    */
   async createFromSuggestion(
