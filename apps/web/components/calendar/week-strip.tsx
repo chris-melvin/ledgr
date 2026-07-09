@@ -14,6 +14,8 @@ interface WeekStripProps {
   dailyLimit: number;
   timezone: string;
   onTodayPress: () => void;
+  /** Tracking mode: shade day dots by spend intensity instead of limit status */
+  showIntensity?: boolean;
 }
 
 const WEEKDAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
@@ -33,6 +35,7 @@ export function WeekStrip({
   dailyLimit,
   timezone,
   onTodayPress,
+  showIntensity = false,
 }: WeekStripProps) {
   const [weekOffset, setWeekOffset] = useState(0);
 
@@ -80,6 +83,15 @@ export function WeekStrip({
     }
     return `${firstMonth} ${firstYear}`;
   }, [weekDays, timezone]);
+
+  // Max spend across the visible week — anchors intensity shading
+  const weekMaxSpend = useMemo(() => {
+    if (!showIntensity) return 0;
+    return weekDays.reduce((max, day) => {
+      const key = formatInTimezone(day, timezone, "yyyy-MM-dd");
+      return Math.max(max, spendingByDay.get(key) ?? 0);
+    }, 0);
+  }, [showIntensity, weekDays, spendingByDay, timezone]);
 
   const goToPrevWeek = useCallback(() => setWeekOffset((o) => o - 1), []);
   const goToNextWeek = useCallback(() => setWeekOffset((o) => o + 1), []);
@@ -167,8 +179,21 @@ export function WeekStrip({
                     ? spent > 0
                       ? "bg-white/60"
                       : "bg-neutral-600"
-                    : getSpendingDotColor(spent, dailyLimit, isFuture)
+                    : showIntensity
+                      ? spent === 0 || isFuture
+                        ? "bg-neutral-200"
+                        : ""
+                      : getSpendingDotColor(spent, dailyLimit, isFuture)
                 )}
+                style={
+                  showIntensity && !isSelected && !isFuture && spent > 0 && weekMaxSpend > 0
+                    ? {
+                        backgroundColor: `rgba(59, 130, 246, ${(
+                          0.3 + 0.7 * Math.min(1, spent / weekMaxSpend)
+                        ).toFixed(2)})`,
+                      }
+                    : undefined
+                }
               />
             </button>
           );

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { createExpenseFromData } from "@/actions/expenses/create";
+import { createExpensesBatch } from "@/actions/expenses/create";
 import { updateExpenseFromData } from "@/actions/expenses/update";
 import { deleteExpense as deleteExpenseAction } from "@/actions/expenses/delete";
 import type { Expense } from "@repo/database";
@@ -60,28 +60,30 @@ export function useServerExpenses(initialExpenses: Expense[]) {
       // Optimistic append — immediate UI update
       setExpenses((prev) => [...prev, ...optimistic]);
 
-      // Call server actions directly
+      // Single batched round trip (spending-clarity)
       try {
-        const results = await Promise.all(
-          items.map((exp) =>
-            createExpenseFromData({
-              occurred_at: occurredAt,
-              amount: exp.amount,
-              label: exp.label,
-              category: exp.category ?? null,
-              bucket_id: exp.bucketId ?? null,
-            })
-          )
+        const result = await createExpensesBatch(
+          items.map((exp) => ({
+            occurred_at: occurredAt,
+            amount: exp.amount,
+            label: exp.label,
+            category: exp.category ?? null,
+            bucket_id: exp.bucketId ?? null,
+          }))
         );
 
-        results.forEach((result, index) => {
-          if (!result.success) {
-            errors.push(`${items[index]?.label}: ${result.error}`);
-          }
-        });
+        if (!result.success) {
+          errors.push(result.error);
+        }
       } catch (err) {
         console.error("[addExpenses] Server action threw:", err);
         errors.push("Failed to save expenses");
+      }
+
+      // Roll back optimistic entries when nothing was persisted
+      if (errors.length > 0) {
+        const optimisticIds = new Set(optimistic.map((o) => o.id));
+        setExpenses((prev) => prev.filter((e) => !optimisticIds.has(e.id)));
       }
 
       if (errors.length > 0) {

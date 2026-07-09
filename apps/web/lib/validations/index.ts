@@ -89,3 +89,16 @@ export {
   type FeedbackStatus,
   type RoadmapStatus,
 } from "./feedback.schema";
+
+// Ledger event schemas (spending-clarity)
+export {
+  createLedgerInflowSchema,
+  createSavingsContributionSchema,
+  setOpeningBalanceSchema,
+  reconcileBalanceSchema,
+  ledgerEventIdSchema,
+  type CreateLedgerInflowInput,
+  type CreateSavingsContributionInput,
+  type SetOpeningBalanceInput,
+  type ReconcileBalanceInput,
+} from "./ledger-event.schema";

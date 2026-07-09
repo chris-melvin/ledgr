@@ -8,6 +8,8 @@ export interface CustomShortcut {
   label: string; // e.g., "Book Purchase"
   category?: string;
   icon?: string;
+  defaultBucketId?: string; // Default bucket for expenses via this shortcut
+  defaultBucketSlug?: string; // For display / slug-based resolution
   createdAt: string; // ISO string
 }
 

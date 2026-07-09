@@ -11,7 +11,8 @@
     "./insights": "./src/insights/calculations.ts",
     "./insights/types": "./src/insights/types.ts",
     "./card-theme": "./src/card-theme.ts",
-    "./budget": "./src/budget.ts"
+    "./budget": "./src/budget.ts",
+    "./spending-stats": "./src/spending-stats.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit",

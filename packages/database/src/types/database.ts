@@ -79,6 +79,17 @@ export type RoadmapStatus =
 
 export type TrackingMode = "tracking_only" | "budget_enabled";
 
+/**
+ * Ledger event types - non-expense money movement for the running balance.
+ * Amounts are stored SIGNED: inflows positive, outflows negative.
+ */
+export type LedgerEventType =
+  | "opening_balance" // (+) starting point, one active per user
+  | "income" // (+) salary etc. received
+  | "savings_withdrawal" // (+) money re-entering from savings
+  | "savings_contribution" // (-) money leaving to savings (not spending)
+  | "adjustment"; // (±) reconciliation drift correction
+
 // =============================================================================
 // CORE TYPES (Updated)
 // =============================================================================
@@ -247,9 +258,36 @@ export interface Shortcut {
   category: string | null;
   icon: string | null;
   default_amount: number | null;
+  bucket_id: string | null; // Default bucket for expenses created via this shortcut
   created_at: string;
   updated_at: string;
 }
+
+export interface LedgerEvent {
+  id: string;
+  user_id: string;
+  type: LedgerEventType;
+  amount: number; // signed: + inflow, - outflow
+  occurred_at: string; // TIMESTAMPTZ
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type LedgerEventInsert = {
+  user_id: string;
+  type: LedgerEventType;
+  amount: number;
+  id?: string;
+  occurred_at?: string;
+  note?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type LedgerEventUpdate = Partial<
+  Omit<LedgerEvent, "id" | "user_id" | "created_at">
+>;
 
 export interface SavingsGoal {
   id: string;
@@ -444,8 +482,12 @@ export type RecurringExpenseInsert = Omit<RecurringExpense, "id" | "created_at" 
   updated_at?: string;
 };
 
-export type ShortcutInsert = Omit<Shortcut, "id" | "created_at" | "updated_at"> & {
+export type ShortcutInsert = Omit<
+  Shortcut,
+  "id" | "created_at" | "updated_at" | "bucket_id"
+> & {
   id?: string;
+  bucket_id?: string | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -605,6 +647,7 @@ export interface BudgetBucket {
   description: string | null; // User-facing description for tooltips
   is_default: boolean;
   is_system: boolean;
+  include_in_daily_avg: boolean; // Expenses in this bucket feed trailing daily-spend averages
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -633,6 +676,7 @@ export type BudgetBucketInsert = {
   description?: string | null;
   is_default?: boolean;
   is_system?: boolean;
+  include_in_daily_avg?: boolean;
   sort_order?: number;
   created_at?: string;
   updated_at?: string;

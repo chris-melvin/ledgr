@@ -284,17 +284,17 @@ export function useAiParser({
     };
   }, [shortcutMap, bucketMap]);
 
-  // Local parsing for templates and shortcuts (instant, no API needed)
-  const parseLocally = useCallback((input: string): ParsedExpense[] | null => {
+  // Parse a single comma/newline-free segment (templates, shortcuts, patterns)
+  const parseSegment = useCallback((input: string): ParsedExpense[] | null => {
     let workingInput = input;
     const results: ParsedExpense[] = [];
 
     // Debug logging
     if (process.env.NODE_ENV === "development") {
-      console.log("[parseLocally] Input:", input);
+      console.log("[parseSegment] Input:", input);
     }
 
-    // Step 1: Extract :bucket pattern (applies to all expenses in this input)
+    // Step 1: Extract :bucket pattern (applies to all expenses in this segment)
     const { bucketSlug, bucketId, remaining: afterBucket } = extractBucket(workingInput);
     workingInput = afterBucket;
 
@@ -439,10 +439,37 @@ export function useAiParser({
     }
 
     if (process.env.NODE_ENV === "development") {
-      console.log("[parseLocally] No results, returning null");
+      console.log("[parseSegment] No results, returning null");
     }
     return null;
   }, [parseShortcutPattern, onUnknownShortcut, extractBucket, extractCategory]);
+
+  // Local parsing (instant, no API needed). Splits batch input on newlines
+  // and commas so per-item tags resolve independently:
+  //   "fare 30, grocery 620 :non-daily, lunch 145"
+  // → fare/lunch fall back to defaults, grocery is Non-daily.
+  const parseLocally = useCallback((input: string): ParsedExpense[] | null => {
+    const segments = input
+      .split(/[\n,]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    if (segments.length <= 1) {
+      return parseSegment(input);
+    }
+
+    const results: ParsedExpense[] = [];
+    for (const segment of segments) {
+      const segmentResults = parseSegment(segment);
+      if (segmentResults === null) {
+        // Unknown shortcut (pendingShortcut set inside) or unparseable
+        // segment — halt the batch so nothing partial is previewed.
+        return null;
+      }
+      results.push(...segmentResults);
+    }
+    return results.length > 0 ? results : null;
+  }, [parseSegment]);
 
   // Check if a string contains a pure-number token
   const hasPureNumber = (text: string): boolean => {
@@ -680,11 +707,33 @@ Examples:
     });
   }, []);
 
+  // Remove a preview item before commit (staged batch editing)
+  const removePreviewItem = useCallback((index: number) => {
+    setPreview((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  // Submit the current (possibly edited) preview directly, bypassing a
+  // re-parse of the raw input — used when the staged preview is the source
+  // of truth (rows may have been re-bucketed or removed).
+  const submitPreview = useCallback(async () => {
+    if (preview.length === 0) return [];
+    const withDefaults = preview.map((expense) => ({
+      ...expense,
+      bucketId: expense.bucketId ?? defaultBucket?.id,
+      bucketSlug: expense.bucketSlug ?? defaultBucket?.slug,
+    }));
+    await onSuccess?.(withDefaults);
+    setPreview([]);
+    return withDefaults;
+  }, [preview, onSuccess, defaultBucket]);
+
   return {
     parse,
     submit,
+    submitPreview,
     updatePreview,
     updatePreviewItem,
+    removePreviewItem,
     clearPreview,
     clearPendingShortcut,
     preview,

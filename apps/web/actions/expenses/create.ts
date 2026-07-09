@@ -103,3 +103,67 @@ export async function createExpenseFromData(data: {
     return error("Failed to create expense", "DATABASE_ERROR");
   }
 }
+
+/**
+ * Create multiple expenses in one round trip (batch entry).
+ * All items are validated first; any invalid item rejects the whole batch
+ * so the client's staged preview stays the source of truth.
+ */
+export async function createExpensesBatch(
+  items: Array<{
+    occurred_at: string;
+    amount: number;
+    label: string;
+    category?: string | null;
+    notes?: string | null;
+    bucket_id?: string | null;
+  }>
+): Promise<ActionResult<Expense[]>> {
+  const authResult = await requireAuth();
+  if (!authResult.success) return authResult;
+  const { userId, supabase } = authResult.data;
+
+  if (items.length === 0) {
+    return error("No expenses to create", "VALIDATION_ERROR");
+  }
+
+  const validated: Array<
+    import("zod").infer<typeof createExpenseSchema>
+  > = [];
+  for (const [index, item] of items.entries()) {
+    const validation = createExpenseSchema.safeParse(item);
+    if (!validation.success) {
+      return error(
+        `Item ${index + 1} (${item.label || "unnamed"}): ${
+          validation.error.issues[0]?.message ?? "Invalid input"
+        }`,
+        "VALIDATION_ERROR"
+      );
+    }
+    validated.push(validation.data);
+  }
+
+  try {
+    const expenses = await expenseRepository.createMany(
+      supabase,
+      validated.map((data) => ({
+        user_id: userId,
+        occurred_at: data.occurred_at,
+        amount: data.amount,
+        label: data.label,
+        category: data.category ?? null,
+        category_id: null,
+        notes: data.notes ?? null,
+        recurring_expense_id: null,
+        bucket_id: data.bucket_id ?? null,
+      }))
+    );
+
+    revalidatePath("/dashboard");
+
+    return success(expenses);
+  } catch (err) {
+    console.error("Failed to create expenses batch:", err);
+    return error("Failed to create expenses", "DATABASE_ERROR");
+  }
+}

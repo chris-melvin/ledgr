@@ -2,27 +2,41 @@
 
 import { useState, useMemo, useCallback, lazy, Suspense } from "react";
 import Link from "next/link";
-import { Settings, MessageSquarePlus, Trash2 } from "lucide-react";
+import { Settings, MessageSquarePlus, Trash2, TableProperties } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { isSameDay } from "date-fns";
 import { useTimezone } from "@/components/providers";
 import * as dateUtils from "@/lib/utils/date";
 import { WeekStrip } from "@/components/calendar/week-strip";
 import { SmartInputBar } from "@/components/expenses/smart-input-bar";
+import { RegisterMode } from "@/components/expenses/register-mode";
+import { CommandPalette } from "@/components/dashboard/command-palette";
+import {
+  LedgerActionDialog,
+  type LedgerActionMode,
+} from "@/components/dashboard/ledger-action-dialog";
 import { FeedbackDialog } from "@/components/feedback/feedback-dialog";
 import { SuccessFlash } from "@/components/ui/success-flash";
 
 import { useServerExpenses } from "@/hooks/use-server-expenses";
 import { useAiParser } from "@/hooks/use-ai-parser";
 import { useShortcuts } from "@/hooks/use-shortcuts";
+import { useSpendingStats } from "@/hooks/use-spending-stats";
 import { HeroDailyCard } from "@/components/dashboard/hero-daily-card";
+import { TrackingHeroCard } from "@/components/dashboard/tracking-hero-card";
 import { ExpenseEditModal } from "@/components/expenses/expense-edit-modal";
 import { showExpenseDeletedToast } from "@/components/ui/undo-toast";
 import { restoreExpense } from "@/actions/expenses/restore";
 import { formatCurrency } from "@/lib/utils";
 import { DEFAULT_DAILY_LIMIT, CURRENCY } from "@/lib/constants";
-import type { Expense, TrackingMode } from "@repo/database";
+import type {
+  BudgetBucket,
+  Expense,
+  LedgerEvent,
+  TrackingMode,
+} from "@repo/database";
 import type { ParsedExpense } from "@/hooks/use-ai-parser";
+import type { SpendingStats } from "@/actions/ledger";
 import type { CardPreferences } from "@/components/dashboard/hero-card/card-theme";
 
 const InsightsTab = lazy(() =>
@@ -36,15 +50,45 @@ interface DashboardClientProps {
   dailyLimit?: number;
   trackingMode?: TrackingMode;
   cardPreferences?: CardPreferences;
+  buckets?: BudgetBucket[];
+  initialLedgerEvents?: LedgerEvent[];
+  initialStats?: SpendingStats | null;
 }
 
-export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "tracking_only", cardPreferences }: DashboardClientProps) {
+const LEDGER_EVENT_LABELS: Record<LedgerEvent["type"], string> = {
+  opening_balance: "Opening balance",
+  income: "Income",
+  savings_withdrawal: "From savings",
+  savings_contribution: "To savings",
+  adjustment: "Adjustment",
+};
+
+function cnLedgerAmount(amount: number): string {
+  return `text-sm font-semibold tabular-nums flex-shrink-0 ${
+    amount >= 0 ? "text-emerald-600" : "text-neutral-700"
+  }`;
+}
+
+export function DashboardClient({
+  initialExpenses,
+  dailyLimit,
+  trackingMode = "tracking_only",
+  cardPreferences,
+  buckets = [],
+  initialLedgerEvents = [],
+  initialStats = null,
+}: DashboardClientProps) {
   const { timezone } = useTimezone();
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const [showSuccessFlash, setShowSuccessFlash] = useState(false);
   const [successMessage, setSuccessMessage] = useState("Added!");
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [editExpense, setEditExpense] = useState<Expense | null>(null);
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [ledgerAction, setLedgerAction] = useState<LedgerActionMode | null>(null);
+  const [smartInputTrigger, setSmartInputTrigger] = useState(0);
+  const [activeTab, setActiveTab] = useState("today");
 
   const actualDailyLimit = dailyLimit ?? DEFAULT_DAILY_LIMIT;
   const isBudgetMode = trackingMode === "budget_enabled";
@@ -55,7 +99,39 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
 
   const { shortcuts } = useShortcuts();
 
+  // Running balance + trailing spend stats (tracking mode)
+  const { stats, refresh: refreshStats } = useSpendingStats(initialStats);
+
   const isToday = useMemo(() => isSameDay(selectedDate, new Date()), [selectedDate]);
+
+  // Buckets whose expenses feed the daily average (Daily; null bucket = fallback)
+  const avgBucketIds = useMemo(
+    () => new Set(buckets.filter((b) => b.include_in_daily_avg).map((b) => b.id)),
+    [buckets]
+  );
+
+  // Today's Daily-bucket total, computed client-side so optimistic adds show instantly
+  const todayDailyTotal = useMemo(() => {
+    const todayKey = dateUtils.formatInTimezone(new Date(), timezone, "yyyy-MM-dd");
+    return expenses
+      .filter((e) => {
+        const key = dateUtils.formatInTimezone(new Date(e.occurred_at), timezone, "yyyy-MM-dd");
+        return (
+          key === todayKey &&
+          (e.bucket_id === null || avgBucketIds.has(e.bucket_id))
+        );
+      })
+      .reduce((sum, e) => sum + e.amount, 0);
+  }, [expenses, timezone, avgBucketIds]);
+
+  // Ledger events on the selected day (history line items, tracking mode)
+  const selectedDayLedgerEvents = useMemo(() => {
+    const selectedKey = dateUtils.formatInTimezone(selectedDate, timezone, "yyyy-MM-dd");
+    return initialLedgerEvents.filter((ev) => {
+      const key = dateUtils.formatInTimezone(new Date(ev.occurred_at), timezone, "yyyy-MM-dd");
+      return key === selectedKey;
+    });
+  }, [initialLedgerEvents, selectedDate, timezone]);
 
   // Selected day expenses (full Expense objects for the list)
   const selectedDayExpenses = useMemo(() => {
@@ -114,6 +190,8 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
       const result = await addExpenses(parsedExpenses, timestamp);
       if (!result.success) return;
 
+      refreshStats();
+
       const firstExpense = parsedExpenses[0];
       setSuccessMessage(
         parsedExpenses.length === 1 && firstExpense
@@ -122,22 +200,62 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
       );
       setShowSuccessFlash(true);
     },
-    [addExpenses, timezone, selectedDate]
+    [addExpenses, timezone, selectedDate, refreshStats]
   );
 
-  const { preview, isParsing, updatePreview, updatePreviewItem, submit } = useAiParser({
+  const {
+    preview,
+    isParsing,
+    updatePreview,
+    updatePreviewItem,
+    removePreviewItem,
+    submit,
+    submitPreview,
+    defaultBucket,
+  } = useAiParser({
     onSuccess: handleAiAddExpenses,
     shortcuts,
+    buckets,
   });
 
   const handleDeleteExpense = async (id: string) => {
     const expense = expenses.find((e) => e.id === id);
     const expenseLabel = expense?.label || "Expense";
     await removeExpense(id);
+    refreshStats();
     showExpenseDeletedToast(expenseLabel, async () => {
       await restoreExpense(id);
+      refreshStats();
     });
   };
+
+  // Register mode: commit staged rows in one batch
+  const handleRegisterCommit = useCallback(
+    async (
+      rows: Array<{ label: string; amount: number; bucketId?: string }>,
+      occurredAt: string
+    ) => {
+      const result = await addExpenses(rows, occurredAt);
+      if (result.success) {
+        refreshStats();
+        setSuccessMessage(
+          rows.length === 1 ? `${rows[0]!.label} added!` : `${rows.length} expenses added!`
+        );
+        setShowSuccessFlash(true);
+      }
+      return result;
+    },
+    [addExpenses, refreshStats]
+  );
+
+  const handleUpdateExpense = useCallback(
+    async (...args: Parameters<typeof updateExpense>) => {
+      const result = await updateExpense(...args);
+      refreshStats();
+      return result;
+    },
+    [updateExpense, refreshStats]
+  );
 
   // Collect existing categories for inline edit
   const existingCategories = useMemo(() => {
@@ -197,7 +315,11 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
       </header>
 
       {/* Tabs + Main Content */}
-      <Tabs defaultValue="today" className="relative flex-1 flex flex-col min-h-0 gap-0">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="relative flex-1 flex flex-col min-h-0 gap-0"
+      >
         <div className="relative flex-shrink-0 flex justify-center py-2 border-b border-neutral-100 bg-white/60 backdrop-blur-sm">
           <TabsList className="bg-neutral-100 rounded-full">
             <TabsTrigger value="today" className="rounded-full text-xs px-4">
@@ -220,19 +342,28 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
                 dailyLimit={actualDailyLimit}
                 timezone={timezone}
                 onTodayPress={handleTodayPress}
+                showIntensity={!isBudgetMode}
               />
 
-              {/* Hero Daily Card */}
-              <HeroDailyCard
-                remaining={selectedDayStatus.remaining}
-                limit={selectedDayStatus.limit}
-                spent={selectedDayStatus.spent}
-                expenses={heroExpenses}
-                date={selectedDate}
-                timezone={timezone}
-                isBudgetMode={isBudgetMode}
-                cardPreferences={cardPreferences}
-              />
+              {/* Hero: running balance (tracking) or daily limit (budget) */}
+              {isBudgetMode ? (
+                <HeroDailyCard
+                  remaining={selectedDayStatus.remaining}
+                  limit={selectedDayStatus.limit}
+                  spent={selectedDayStatus.spent}
+                  expenses={heroExpenses}
+                  date={selectedDate}
+                  timezone={timezone}
+                  isBudgetMode={isBudgetMode}
+                  cardPreferences={cardPreferences}
+                />
+              ) : (
+                <TrackingHeroCard
+                  stats={stats}
+                  todayDailyTotal={todayDailyTotal}
+                  onStatsChanged={refreshStats}
+                />
+              )}
 
               {/* Expense List Card */}
               <div className="bg-white rounded-2xl border border-neutral-200 shadow-lg overflow-hidden">
@@ -240,10 +371,43 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
                   <h3 className="text-sm font-semibold text-neutral-900">
                     {isToday ? "Today\u2019s Transactions" : "Transactions"}
                   </h3>
-                  <span className="text-xs text-neutral-400">{selectedDayExpenses.length} total</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setRegisterOpen(true)}
+                      className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full hover:bg-teal-100 transition-colors focus-visible:outline-2 focus-visible:outline-teal-500"
+                      title="Register mode \u2014 rapid keyboard entry"
+                    >
+                      <TableProperties className="w-3 h-3" />
+                      Register
+                    </button>
+                    <span className="text-xs text-neutral-400">{selectedDayExpenses.length} total</span>
+                  </div>
                 </div>
                 <div className="divide-y divide-neutral-100">
-                  {selectedDayExpenses.length === 0 ? (
+                  {/* Ledger events: distinct line items, excluded from spend totals */}
+                  {selectedDayLedgerEvents.map((event) => (
+                    <div
+                      key={event.id}
+                      className="px-4 py-3 flex items-center gap-3 bg-neutral-50/60"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-neutral-700 truncate">
+                          {event.note || LEDGER_EVENT_LABELS[event.type]}
+                        </p>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-neutral-200/70 text-neutral-600 uppercase tracking-wide">
+                          {LEDGER_EVENT_LABELS[event.type]}
+                        </span>
+                      </div>
+                      <span
+                        className={cnLedgerAmount(event.amount)}
+                      >
+                        {event.amount >= 0 ? "+" : "-"}
+                        {formatCurrency(event.amount, CURRENCY)}
+                      </span>
+                    </div>
+                  ))}
+
+                  {selectedDayExpenses.length === 0 && selectedDayLedgerEvents.length === 0 ? (
                     <div className="p-6 text-center">
                       <p className="text-neutral-400 text-sm">
                         {isToday ? "No expenses yet today" : "No expenses recorded"}
@@ -344,7 +508,12 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
         isParsing={isParsing}
         onInputChange={updatePreview}
         onSubmit={submit}
+        onSubmitPreview={submitPreview}
         onPreviewUpdate={updatePreviewItem}
+        onPreviewRemove={removePreviewItem}
+        buckets={buckets}
+        defaultBucketSlug={defaultBucket?.slug}
+        openTrigger={smartInputTrigger}
       />
 
       {/* Success Animation */}
@@ -356,6 +525,38 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
         onComplete={() => setShowSuccessFlash(false)}
       />
 
+      {/* Command Palette (Cmd+K) */}
+      <CommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        onAddExpenses={() => setSmartInputTrigger((n) => n + 1)}
+        onRegisterMode={() => setRegisterOpen(true)}
+        onLedgerAction={setLedgerAction}
+        onNavigateTab={setActiveTab}
+        showLedgerActions={!isBudgetMode}
+      />
+
+      {/* Ledger mini-flows (income / savings / reconcile) */}
+      <LedgerActionDialog
+        mode={ledgerAction}
+        onClose={() => setLedgerAction(null)}
+        onSuccess={(message) => {
+          refreshStats();
+          setSuccessMessage(message);
+          setShowSuccessFlash(true);
+        }}
+      />
+
+      {/* Register Mode */}
+      <RegisterMode
+        open={registerOpen}
+        onClose={() => setRegisterOpen(false)}
+        buckets={buckets}
+        defaultBucketId={defaultBucket?.id}
+        timezone={timezone}
+        onCommit={handleRegisterCommit}
+      />
+
       {/* Feedback Dialog */}
       <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
 
@@ -364,7 +565,7 @@ export function DashboardClient({ initialExpenses, dailyLimit, trackingMode = "t
         expense={editExpense}
         open={editExpense !== null}
         onClose={() => setEditExpense(null)}
-        onSave={updateExpense}
+        onSave={handleUpdateExpense}
         onDelete={handleDeleteExpense}
         existingCategories={existingCategories}
         timezone={timezone}
