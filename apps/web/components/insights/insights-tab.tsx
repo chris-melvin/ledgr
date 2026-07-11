@@ -20,6 +20,8 @@ import {
   computeCumulativeSpending,
   computeTopSpendingDays,
   computeCategoryTrends,
+  computeBalanceTrend,
+  computeBucketBreakdown,
 } from "@/lib/insights/calculations";
 import { SpendingTrendChart } from "./spending-trend-chart";
 import { CategoryBreakdown } from "./category-breakdown";
@@ -33,19 +35,28 @@ import { TimeOfDayChart } from "./time-of-day-chart";
 import { CumulativeSpendingChart } from "./cumulative-spending-chart";
 import { TopSpendingDays } from "./top-spending-days";
 import { CategoryTrends } from "./category-trends";
-import type { Expense } from "@repo/database";
+import { BalanceTrendChart } from "./balance-trend-chart";
+import { BucketBreakdown } from "./bucket-breakdown";
+import type { BudgetBucket, Expense, LedgerEvent } from "@repo/database";
 import type { InsightsPeriod } from "@/lib/insights/types";
 
 interface InsightsTabProps {
   expenses: Expense[];
   dailyLimit: number;
   isBudgetMode: boolean;
+  // Tracking-mode extras (spending-clarity)
+  ledgerEvents?: LedgerEvent[];
+  buckets?: BudgetBucket[];
+  currentBalance?: number | null;
 }
 
 export function InsightsTab({
   expenses,
   dailyLimit,
   isBudgetMode,
+  ledgerEvents = [],
+  buckets = [],
+  currentBalance = null,
 }: InsightsTabProps) {
   const { timezone } = useTimezone();
   const [period, setPeriod] = useState<InsightsPeriod>("month");
@@ -149,6 +160,33 @@ export function InsightsTab({
     [expenses, timezone]
   );
 
+  // Tracking-mode: balance trend + bucket breakdown (spending-clarity)
+  const openingEvent = useMemo(
+    () => ledgerEvents.find((ev) => ev.type === "opening_balance") ?? null,
+    [ledgerEvents]
+  );
+
+  const balanceTrend = useMemo(() => {
+    if (isBudgetMode || currentBalance === null) return [];
+    return computeBalanceTrend(
+      currentBalance,
+      ledgerEvents,
+      expenses,
+      timezone,
+      days,
+      openingEvent?.occurred_at ?? null
+    );
+  }, [isBudgetMode, currentBalance, ledgerEvents, expenses, timezone, days, openingEvent]);
+
+  const bucketBreakdown = useMemo(() => {
+    if (isBudgetMode || buckets.length === 0) return [];
+    // Only post-opening expenses belong to the tracking era
+    const eraExpenses = openingEvent
+      ? periodExpenses.filter((e) => e.occurred_at > openingEvent.occurred_at)
+      : periodExpenses;
+    return computeBucketBreakdown(eraExpenses, buckets);
+  }, [isBudgetMode, buckets, periodExpenses, openingEvent]);
+
   return (
     <div className="max-w-lg mx-auto p-3 sm:p-4 space-y-4">
       {/* 1. Period Toggle + Summary */}
@@ -192,7 +230,10 @@ export function InsightsTab({
         </div>
       </div>
 
-      {/* 2. Tracking Completeness Score (NEW) */}
+      {/* 2. Balance Trend (tracking mode) */}
+      <BalanceTrendChart data={balanceTrend} />
+
+      {/* 2b. Tracking Completeness Score (NEW) */}
       <TrackingCompletenessCard data={trackingCompleteness} />
 
       {/* 3. Month-over-Month Comparison */}
@@ -205,6 +246,9 @@ export function InsightsTab({
         dailyLimit={dailyLimit}
         isBudgetMode={isBudgetMode}
       />
+
+      {/* 4b. Bucket Breakdown (tracking mode) */}
+      <BucketBreakdown data={bucketBreakdown} />
 
       {/* 5. Cumulative Spending Chart (NEW) */}
       <CumulativeSpendingChart data={cumulativeSpending} />

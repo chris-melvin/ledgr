@@ -100,3 +100,21 @@ export interface CategoryTrendWeek {
   startDate: string;
   categories: Record<string, number>;
 }
+
+// ─── Tracking-mode insights (spending-clarity) ──────────────────────────────
+
+export interface BalanceTrendPoint {
+  date: string; // yyyy-MM-dd local
+  balance: number;
+  isToday: boolean;
+}
+
+export interface BucketTotal {
+  bucketId: string | null;
+  name: string;
+  slug: string;
+  color: string;
+  total: number;
+  percentage: number;
+  count: number;
+}

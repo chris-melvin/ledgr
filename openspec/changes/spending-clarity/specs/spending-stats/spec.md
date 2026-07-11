@@ -52,3 +52,14 @@ The calendar view SHALL render per-day spend intensity (heatmap-style shading) b
 #### Scenario: Heavier days shade darker
 - **WHEN** the calendar month contains days with totals 0, 250, and 900
 - **THEN** the 900 day renders with visibly stronger intensity than the 250 day, and the 0 day renders neutral
+
+### Requirement: Tracking-mode insights
+The Insights tab SHALL, in tracking-only mode, additionally surface: a balance trend line covering the selected period (clipped to the opening-balance day, ending at the current derived balance) and a bucket breakdown of period spending (Daily/Bills/Non-daily totals with counts and percentage share, direct-labeled). Pre-opening expenses SHALL be excluded from both.
+
+#### Scenario: Balance trend ends at the true balance
+- **WHEN** the user opens Insights with a current balance of 8,000
+- **THEN** the balance trend's final point equals 8,000 and no point predates the opening-balance day
+
+#### Scenario: Bucket breakdown shows share of spending
+- **WHEN** the period contains 1,500 Daily, 2,500 Bills, and 1,000 Non-daily post-opening expenses
+- **THEN** the breakdown lists Bills 50%, Daily 30%, Non-daily 20% with their totals
