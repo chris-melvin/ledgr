@@ -28,8 +28,9 @@ ledgr is being repurposed as a laptop-only, batch-entry spending tracker. The ow
 ## Decisions
 
 ### D1: Running balance is derived, never stored
-Balance = Σ signed `ledger_events` − Σ `expenses.amount`. Computed server-side per request (indexed sums are cheap at personal scale).
+Balance = Σ signed `ledger_events` − Σ `expenses.amount` **where `occurred_at` > the opening balance timestamp**. The opening balance snapshots reality; expenses before it (historical data, pre-snapshot backfills) are already baked into that number and must not drain it again. Spending stats windows are clipped to the opening timestamp for the same reason. Computed server-side per request (indexed sums are cheap at personal scale).
 - *Alternative — stored counter updated transactionally*: rejected; drift risk, race conditions, and the dormant mobile sync client would corrupt it.
+- *Alternative — count all expenses ever*: rejected after real use; a returning user's historical expenses produced an instantly negative balance.
 
 ### D2: New `ledger_events` table for non-expense money movement
 One additive table covers every inflow and adjustment with a signed `amount`:
