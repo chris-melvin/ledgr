@@ -559,7 +559,6 @@ export function useAiParser({
         results.push({
           amount,  // Always use user-provided amount
           label: template ? template.label : labelPart || "Expense",
-          category: template?.label,
         });
       }
     }

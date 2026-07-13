@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { CURRENCY } from "@/lib/constants";
 import * as dateUtils from "@/lib/utils/date";
-import type { Expense } from "@repo/database";
+import type { BudgetBucket, Expense } from "@repo/database";
 
 interface ExpenseEditModalProps {
   expense: Expense | null;
@@ -22,12 +22,14 @@ interface ExpenseEditModalProps {
     updates: {
       amount?: number;
       label?: string;
+      bucket_id?: string | null;
       category?: string | null;
       notes?: string | null;
       occurred_at?: string;
     }
   ) => Promise<{ success: boolean; error?: string }>;
   onDelete: (id: string) => void;
+  buckets: BudgetBucket[];
   existingCategories: string[];
   timezone: string;
 }
@@ -38,11 +40,13 @@ export function ExpenseEditModal({
   onClose,
   onSave,
   onDelete,
+  buckets,
   existingCategories,
   timezone,
 }: ExpenseEditModalProps) {
   const [amount, setAmount] = useState("");
   const [label, setLabel] = useState("");
+  const [bucketId, setBucketId] = useState("");
   const [category, setCategory] = useState("");
   const [customCategory, setCustomCategory] = useState(false);
   const [time, setTime] = useState("");
@@ -54,6 +58,7 @@ export function ExpenseEditModal({
     if (expense) {
       setAmount(String(expense.amount));
       setLabel(expense.label);
+      setBucketId(expense.bucket_id || "");
       const cat = expense.category || "";
       setCategory(cat);
       setCustomCategory(cat !== "" && !existingCategories.includes(cat));
@@ -64,12 +69,15 @@ export function ExpenseEditModal({
     }
   }, [expense, timezone, existingCategories]);
 
+  const selectedBucket = buckets.find((b) => b.id === bucketId);
+
   const handleSave = () => {
     if (!expense) return;
 
     const updates: {
       amount?: number;
       label?: string;
+      bucket_id?: string | null;
       category?: string | null;
       notes?: string | null;
       occurred_at?: string;
@@ -81,6 +89,9 @@ export function ExpenseEditModal({
     }
     if (label.trim() && label.trim() !== expense.label) {
       updates.label = label.trim();
+    }
+    if (bucketId !== (expense.bucket_id || "")) {
+      updates.bucket_id = bucketId || null;
     }
     if (category !== (expense.category || "")) {
       updates.category = category || null;
@@ -169,10 +180,34 @@ export function ExpenseEditModal({
             </div>
           </div>
 
-          {/* Category */}
+          {/* Bucket — decides whether this expense counts toward daily spending */}
           <div>
             <label className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider block mb-1.5">
-              Category
+              Bucket
+            </label>
+            <select
+              value={bucketId}
+              onChange={(e) => setBucketId(e.target.value)}
+              className="w-full text-sm bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 appearance-none"
+            >
+              <option value="">No bucket</option>
+              {buckets.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-[10px] text-neutral-400 mt-1">
+              {selectedBucket && !selectedBucket.include_in_daily_avg
+                ? "Not counted toward daily spending."
+                : "Counted toward daily spending."}
+            </p>
+          </div>
+
+          {/* Category — optional, descriptive only */}
+          <div>
+            <label className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider block mb-1.5">
+              Category <span className="normal-case tracking-normal text-neutral-400">· optional</span>
             </label>
             {customCategory ? (
               <div className="flex gap-2">

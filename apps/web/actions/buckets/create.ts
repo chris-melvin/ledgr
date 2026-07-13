@@ -16,6 +16,8 @@ interface CreateBucketParams {
   icon?: string;
   description?: string | null;
   isDefault?: boolean;
+  /** Expenses in this bucket feed the trailing daily-spend averages */
+  includeInDailyAvg?: boolean;
 }
 
 /**
@@ -43,6 +45,7 @@ export async function createBucket(params: CreateBucketParams) {
     icon,
     description,
     isDefault = false,
+    includeInDailyAvg = false,
   } = params;
 
   // Validate: bucket should have either percentage or targetAmount (or neither for manual allocation)
@@ -75,6 +78,7 @@ export async function createBucket(params: CreateBucketParams) {
     icon: icon ?? "Wallet",
     is_default: isDefault,
     is_system: false,
+    include_in_daily_avg: includeInDailyAvg,
     sort_order: sortOrder,
   };
 
@@ -285,6 +289,8 @@ export async function updateBucket(
   if (params.color !== undefined) updateData.color = params.color;
   if (params.icon !== undefined) updateData.icon = params.icon;
   if (params.description !== undefined) updateData.description = params.description;
+  if (params.includeInDailyAvg !== undefined)
+    updateData.include_in_daily_avg = params.includeInDailyAvg;
 
   const { data, error } = await supabase
     .from("budget_buckets")
