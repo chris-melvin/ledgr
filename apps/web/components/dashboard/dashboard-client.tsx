@@ -495,6 +495,9 @@ export function DashboardClient({
                 expenses={expenses}
                 dailyLimit={actualDailyLimit}
                 isBudgetMode={isBudgetMode}
+                ledgerEvents={initialLedgerEvents}
+                buckets={buckets}
+                currentBalance={stats?.balance ?? null}
               />
             </Suspense>
           </TabsContent>

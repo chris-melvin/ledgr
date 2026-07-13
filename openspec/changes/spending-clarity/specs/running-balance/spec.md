@@ -3,14 +3,22 @@
 ## ADDED Requirements
 
 ### Requirement: Running balance derivation
-The system SHALL compute the running balance as the sum of all signed ledger events minus the sum of all expense amounts, across all buckets. The balance SHALL be derived at read time and never stored as a mutable counter.
+The system SHALL compute the running balance as the sum of all signed ledger events minus the sum of expense amounts that occurred AFTER the opening balance timestamp, across all buckets. The opening balance is a snapshot of reality — expenses recorded before it (historical data from earlier app usage, or backfills predating the snapshot) are already reflected in the snapshot and SHALL NOT reduce the balance. The balance SHALL be derived at read time and never stored as a mutable counter.
 
 #### Scenario: Balance reflects all money movement
-- **WHEN** the user has an opening balance of 10,000, a received income of 30,000, expenses totaling 5,000 (any mix of buckets), and a savings contribution of 8,000
+- **WHEN** the user has an opening balance of 10,000, a received income of 30,000, post-opening expenses totaling 5,000 (any mix of buckets), and a savings contribution of 8,000
 - **THEN** the running balance displays 27,000
 
+#### Scenario: Historical expenses do not drain the balance
+- **WHEN** a user with 22,360 of expenses recorded before starting sets an opening balance of 8,000 and logs no new expenses
+- **THEN** the running balance displays 8,000
+
+#### Scenario: Backfills predating the snapshot are excluded
+- **WHEN** the user sets an opening balance today at 10:00 and then backfills an expense to yesterday
+- **THEN** the running balance is unchanged by the backfilled expense (that money was already gone when the snapshot was taken)
+
 #### Scenario: Bills reduce the balance
-- **WHEN** the user logs an expense of 2,500 in the Bills bucket
+- **WHEN** the user logs an expense of 2,500 in the Bills bucket after the opening balance
 - **THEN** the running balance decreases by 2,500
 
 ### Requirement: Ledger event types

@@ -23,14 +23,38 @@ interface LedgerEventLike {
   amount: number; // signed
 }
 
-// Mirrors ledgerEventRepository.getRunningBalance
+interface ExpenseLike {
+  amount: number;
+  occurred_at: string;
+}
+
+// Mirrors ledgerEventRepository.getRunningBalance: only expenses AFTER
+// the opening-balance snapshot drain the balance.
+function runningBalanceScoped(
+  events: Array<LedgerEventLike & { occurred_at?: string }>,
+  expenses: ExpenseLike[]
+): number {
+  const opening = events.find((e) => e.type === "opening_balance");
+  const eventSum = events.reduce((acc, e) => acc + e.amount, 0);
+  const expenseSum = expenses
+    .filter((e) => !opening?.occurred_at || e.occurred_at > opening.occurred_at)
+    .reduce((acc, e) => acc + e.amount, 0);
+  return eventSum - expenseSum;
+}
+
+// Convenience for tests where all expenses are post-opening
 function runningBalance(
   events: LedgerEventLike[],
   expenseAmounts: number[]
 ): number {
-  const eventSum = events.reduce((acc, e) => acc + e.amount, 0);
-  const expenseSum = expenseAmounts.reduce((acc, a) => acc + a, 0);
-  return eventSum - expenseSum;
+  const withTs = events.map((e) => ({
+    ...e,
+    occurred_at: e.type === "opening_balance" ? "2026-07-01T00:00:00Z" : undefined,
+  }));
+  return runningBalanceScoped(
+    withTs,
+    expenseAmounts.map((amount) => ({ amount, occurred_at: "2026-07-05T00:00:00Z" }))
+  );
 }
 
 // Mirrors createSavingsContribution's sign application
@@ -72,6 +96,29 @@ describe("running balance derivation", () => {
       { type: "savings_withdrawal", amount: 3000 },
     ];
     expect(runningBalance(events, [])).toBe(4000);
+  });
+
+  it("historical expenses before the opening snapshot do not drain the balance (regression)", () => {
+    // Returning user: 22,360 of old expenses, fresh 8,000 opening balance
+    const events = [
+      { type: "opening_balance" as const, amount: 8000, occurred_at: "2026-07-11T02:00:00Z" },
+    ];
+    const expenses = [
+      { amount: 12360, occurred_at: "2026-03-10T05:00:00Z" },
+      { amount: 10000, occurred_at: "2026-05-22T09:00:00Z" },
+    ];
+    expect(runningBalanceScoped(events, expenses)).toBe(8000);
+  });
+
+  it("backfills predating the snapshot are excluded, later expenses count", () => {
+    const events = [
+      { type: "opening_balance" as const, amount: 8000, occurred_at: "2026-07-11T02:00:00Z" },
+    ];
+    const expenses = [
+      { amount: 500, occurred_at: "2026-07-10T12:00:00Z" }, // backfilled to yesterday
+      { amount: 300, occurred_at: "2026-07-11T08:00:00Z" }, // after snapshot
+    ];
+    expect(runningBalanceScoped(events, expenses)).toBe(7700);
   });
 });
 

@@ -53,22 +53,32 @@ export async function getSpendingStats(): Promise<ActionResult<SpendingStats>> {
       .catch(() => null);
     const timezone = settings?.timezone ?? DEFAULT_TIMEZONE;
     const anchor = new Date().toISOString();
-    // 31-day fetch window buffers timezone offset around the 30-day stat window
-    const windowStart = subDays(new Date(), 31).toISOString();
 
-    const [balance, openingBalance, buckets, expenseResult] =
-      await Promise.all([
-        ledgerEventRepository.getRunningBalance(supabase, userId),
-        ledgerEventRepository.findOpeningBalance(supabase, userId),
-        budgetBucketRepository.findAllOrdered(supabase, userId),
-        supabase
-          .from("expenses")
-          .select("amount, occurred_at, bucket_id")
-          .eq("user_id", userId)
-          .is("deleted_at", null)
-          .gte("occurred_at", windowStart)
-          .lte("occurred_at", anchor),
-      ]);
+    const openingBalance = await ledgerEventRepository.findOpeningBalance(
+      supabase,
+      userId
+    );
+
+    // 31-day fetch window buffers timezone offset around the 30-day stat
+    // window. Never look past the opening balance: expenses before the
+    // snapshot are history, not part of this tracking era.
+    const thirtyOneDaysAgo = subDays(new Date(), 31).toISOString();
+    const windowStart =
+      openingBalance && openingBalance.occurred_at > thirtyOneDaysAgo
+        ? openingBalance.occurred_at
+        : thirtyOneDaysAgo;
+
+    const [balance, buckets, expenseResult] = await Promise.all([
+      ledgerEventRepository.getRunningBalance(supabase, userId),
+      budgetBucketRepository.findAllOrdered(supabase, userId),
+      supabase
+        .from("expenses")
+        .select("amount, occurred_at, bucket_id")
+        .eq("user_id", userId)
+        .is("deleted_at", null)
+        .gt("occurred_at", windowStart)
+        .lte("occurred_at", anchor),
+    ]);
 
     if (expenseResult.error) throw expenseResult.error;
 

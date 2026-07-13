@@ -77,20 +77,30 @@ class LedgerEventRepository extends BaseRepository<
   }
 
   /**
-   * Derived running balance: Σ ledger_events − Σ expenses.
-   * Soft-deleted expenses are excluded (deleted_at is null).
+   * Derived running balance: Σ ledger_events − Σ expenses AFTER the
+   * opening balance. The opening balance is a snapshot of reality at its
+   * timestamp — expenses before it (historical data, backfills predating
+   * the snapshot) are already reflected in that number and must not
+   * drain the balance again. Soft-deleted expenses are excluded.
    */
   async getRunningBalance(
     supabase: SupabaseClient,
     userId: string
   ): Promise<number> {
+    const opening = await this.findOpeningBalance(supabase, userId);
+
+    let expenseQuery = supabase
+      .from("expenses")
+      .select("amount")
+      .eq("user_id", userId)
+      .is("deleted_at", null);
+    if (opening) {
+      expenseQuery = expenseQuery.gt("occurred_at", opening.occurred_at);
+    }
+
     const [eventSum, expenseResult] = await Promise.all([
       this.sumAmounts(supabase, userId),
-      supabase
-        .from("expenses")
-        .select("amount")
-        .eq("user_id", userId)
-        .is("deleted_at", null),
+      expenseQuery,
     ]);
 
     if (expenseResult.error) throw expenseResult.error;

@@ -289,3 +289,96 @@ export function computeCategoryTrends(expenses: Expense[], timezone: string, wee
   });
   return { weeks: weekData, categories: hasOther ? [...topCategories, "Other"] : topCategories };
 }
+
+// ─── Tracking-mode insights (spending-clarity) ──────────────────────────────
+
+/**
+ * Balance trend: walks BACKWARD from the current derived balance so the
+ * series always ends at today's true number. balance(d-1) = balance(d)
+ * − ledger events on d + post-opening expenses on d. The series is
+ * clipped to the opening-balance day — there is no balance before the
+ * snapshot.
+ */
+export function computeBalanceTrend(
+  currentBalance: number,
+  ledgerEvents: Array<{ amount: number; occurred_at: string }>,
+  expenses: Array<{ amount: number; occurred_at: string }>,
+  timezone: string,
+  days: number,
+  openingOccurredAt: string | null
+): import("./types").BalanceTrendPoint[] {
+  if (!openingOccurredAt) return [];
+
+  const todayStr = dateUtils.formatInTimezone(new Date(), timezone, "yyyy-MM-dd");
+  const endTimestamp = dateUtils.getCurrentTimestamp(timezone, true);
+  const startTimestamp = dateUtils.subtractDaysFromTimestamp(endTimestamp, days - 1, timezone);
+  const dayKeys = dateUtils.getEachDayInInterval(startTimestamp, endTimestamp, timezone);
+  const openingDay = dateUtils.formatInTimezone(new Date(openingOccurredAt), timezone, "yyyy-MM-dd");
+
+  const eventsByDay = new Map<string, number>();
+  for (const ev of ledgerEvents) {
+    const key = dateUtils.formatInTimezone(new Date(ev.occurred_at), timezone, "yyyy-MM-dd");
+    eventsByDay.set(key, (eventsByDay.get(key) ?? 0) + ev.amount);
+  }
+  const expensesByDay = new Map<string, number>();
+  for (const ex of expenses) {
+    if (ex.occurred_at <= openingOccurredAt) continue; // pre-snapshot history
+    const key = dateUtils.formatInTimezone(new Date(ex.occurred_at), timezone, "yyyy-MM-dd");
+    expensesByDay.set(key, (expensesByDay.get(key) ?? 0) + ex.amount);
+  }
+
+  // Walk backward from today
+  const balances = new Map<string, number>();
+  let running = currentBalance;
+  for (let i = dayKeys.length - 1; i >= 0; i--) {
+    const day = dayKeys[i]!;
+    balances.set(day, running);
+    running = running - (eventsByDay.get(day) ?? 0) + (expensesByDay.get(day) ?? 0);
+  }
+
+  return dayKeys
+    .filter((date) => date >= openingDay)
+    .map((date) => ({
+      date,
+      balance: Math.round((balances.get(date) ?? 0) * 100) / 100,
+      isToday: date === todayStr,
+    }));
+}
+
+/**
+ * Bucket breakdown: period totals per tracking bucket. Expenses with no
+ * bucket fall into the default (Daily) bucket, matching stats behavior.
+ */
+export function computeBucketBreakdown(
+  expenses: Array<{ amount: number; bucket_id: string | null }>,
+  buckets: Array<{ id: string; name: string; slug: string; color: string | null; is_default: boolean }>
+): import("./types").BucketTotal[] {
+  const defaultBucket = buckets.find((b) => b.is_default) ?? buckets[0];
+  const totals = new Map<string, { total: number; count: number }>();
+
+  for (const expense of expenses) {
+    const bucketId = expense.bucket_id ?? defaultBucket?.id ?? "unbucketed";
+    const entry = totals.get(bucketId) ?? { total: 0, count: 0 };
+    entry.total += expense.amount;
+    entry.count += 1;
+    totals.set(bucketId, entry);
+  }
+
+  const grandTotal = Array.from(totals.values()).reduce((acc, t) => acc + t.total, 0);
+
+  return buckets
+    .map((bucket) => {
+      const entry = totals.get(bucket.id) ?? { total: 0, count: 0 };
+      return {
+        bucketId: bucket.id,
+        name: bucket.name,
+        slug: bucket.slug,
+        color: bucket.color ?? "#8C8C8C",
+        total: entry.total,
+        percentage: grandTotal > 0 ? (entry.total / grandTotal) * 100 : 0,
+        count: entry.count,
+      };
+    })
+    .filter((b) => b.count > 0)
+    .sort((a, b) => b.total - a.total);
+}

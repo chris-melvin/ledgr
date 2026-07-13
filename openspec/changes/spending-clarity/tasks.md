@@ -51,3 +51,9 @@
 - [x] 8.1 Vitest coverage for repository/actions (ledger types, single opening balance, reconcile drift math) and parser bucket priority
 - [ ] 8.2 Manual pass of every spec scenario (running-balance, spend-buckets, spending-stats, batch-entry, command-palette); `pnpm --filter web build` + tests green — build+tests ✅; manual pass blocked until migrations 0019/0020 are applied to Supabase
 - [x] 8.3 Confirm migrations are additive & dormant mobile client unaffected (sync ignores new tables/columns); note mobile parity backlog pointer in specs
+
+## 9. Tracking Insights (added after initial review)
+
+- [x] 9.1 Fix: running balance + stats scoped to the opening-balance snapshot (historical expenses excluded) — regression tests added
+- [x] 9.2 `computeBalanceTrend` (backward walk from derived balance, clipped to opening day) + `computeBucketBreakdown` in insights calculations
+- [x] 9.3 `BalanceTrendChart` + `BucketBreakdown` components; wired into InsightsTab for tracking mode with era-scoped expenses
