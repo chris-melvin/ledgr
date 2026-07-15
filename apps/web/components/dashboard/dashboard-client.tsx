@@ -25,7 +25,10 @@ import { useSpendingStats } from "@/hooks/use-spending-stats";
 import { HeroDailyCard } from "@/components/dashboard/hero-daily-card";
 import { TrackingHeroCard } from "@/components/dashboard/tracking-hero-card";
 import { ExpenseEditModal } from "@/components/expenses/expense-edit-modal";
-import { showExpenseDeletedToast } from "@/components/ui/undo-toast";
+import {
+  showExpenseDeletedToast,
+  showLedgerAppendOnlyToast,
+} from "@/components/ui/undo-toast";
 import { restoreExpense } from "@/actions/expenses/restore";
 import { formatCurrency } from "@/lib/utils";
 import { DEFAULT_DAILY_LIMIT, CURRENCY } from "@/lib/constants";
@@ -107,6 +110,11 @@ export function DashboardClient({
   // Buckets whose expenses feed the daily average (Daily; null bucket = fallback)
   const avgBucketIds = useMemo(
     () => new Set(buckets.filter((b) => b.include_in_daily_avg).map((b) => b.id)),
+    [buckets]
+  );
+
+  const bucketById = useMemo(
+    () => new Map(buckets.map((b) => [b.id, b])),
     [buckets]
   );
 
@@ -384,11 +392,15 @@ export function DashboardClient({
                   </div>
                 </div>
                 <div className="divide-y divide-neutral-100">
-                  {/* Ledger events: distinct line items, excluded from spend totals */}
+                  {/* Ledger events: distinct line items, excluded from spend totals.
+                      Append-only — corrections are made by adding an adjustment. */}
                   {selectedDayLedgerEvents.map((event) => (
-                    <div
+                    <button
                       key={event.id}
-                      className="px-4 py-3 flex items-center gap-3 bg-neutral-50/60"
+                      type="button"
+                      onClick={() => showLedgerAppendOnlyToast(() => setLedgerAction("reconcile"))}
+                      title="Ledger entries are a permanent record and can't be edited"
+                      className="w-full text-left px-4 py-3 flex items-center gap-3 bg-neutral-50/60 hover:bg-neutral-100/70 transition-colors cursor-help focus-visible:outline-2 focus-visible:outline-teal-500"
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-neutral-700 truncate">
@@ -404,7 +416,7 @@ export function DashboardClient({
                         {event.amount >= 0 ? "+" : "-"}
                         {formatCurrency(event.amount, CURRENCY)}
                       </span>
-                    </div>
+                    </button>
                   ))}
 
                   {selectedDayExpenses.length === 0 && selectedDayLedgerEvents.length === 0 ? (
@@ -419,6 +431,9 @@ export function DashboardClient({
                   ) : (
                     selectedDayExpenses.map((expense) => {
                       const time = dateUtils.formatDate(expense.occurred_at, timezone, "h:mm a");
+                      const bucket = expense.bucket_id
+                        ? bucketById.get(expense.bucket_id)
+                        : undefined;
 
                       return (
                         <div key={expense.id} className="group">
@@ -433,6 +448,29 @@ export function DashboardClient({
                               </p>
                               <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className="text-[10px] text-neutral-500">{time}</span>
+                                {bucket && (
+                                  <span
+                                    title={
+                                      bucket.include_in_daily_avg
+                                        ? `${bucket.name} · counts toward daily spending`
+                                        : `${bucket.name} · not counted toward daily spending`
+                                    }
+                                    className="text-[9px] px-1.5 py-0.5 rounded-full border border-neutral-200 text-neutral-600 font-medium inline-flex items-center gap-1"
+                                  >
+                                    <span
+                                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                      style={{
+                                        backgroundColor: bucket.include_in_daily_avg
+                                          ? (bucket.color ?? "#6b7280")
+                                          : "transparent",
+                                        boxShadow: bucket.include_in_daily_avg
+                                          ? undefined
+                                          : `inset 0 0 0 1px ${bucket.color ?? "#6b7280"}`,
+                                      }}
+                                    />
+                                    {bucket.name}
+                                  </span>
+                                )}
                                 {expense.category && (
                                   <span className="text-[9px] px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600">
                                     {expense.category}
@@ -570,6 +608,7 @@ export function DashboardClient({
         onClose={() => setEditExpense(null)}
         onSave={handleUpdateExpense}
         onDelete={handleDeleteExpense}
+        buckets={buckets}
         existingCategories={existingCategories}
         timezone={timezone}
       />

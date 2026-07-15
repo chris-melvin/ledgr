@@ -39,6 +39,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,
   TooltipContent,
@@ -85,6 +86,34 @@ interface BucketsSettingsProps {
   buckets: BudgetBucket[];
   currency: string;
   availableAmount?: number;
+}
+
+/**
+ * Controls whether a bucket's expenses feed the trailing daily-spend averages.
+ * Bills and other lumpy, non-daily spending should stay off so they don't
+ * distort the daily number.
+ */
+function DailyAvgToggle({
+  id,
+  checked,
+  onCheckedChange,
+}: {
+  id: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 rounded-lg border border-stone-200 p-3">
+      <div className="space-y-0.5">
+        <Label htmlFor={id}>Counts toward daily spending</Label>
+        <p className="text-xs text-stone-500">
+          Expenses in this bucket feed your daily average and today&apos;s total.
+          Turn off for bills and other non-daily spending.
+        </p>
+      </div>
+      <Switch id={id} checked={checked} onCheckedChange={onCheckedChange} />
+    </div>
+  );
 }
 
 export function BucketsSettings({
@@ -291,6 +320,11 @@ export function BucketsSettings({
                         {allocatedAmount.toLocaleString()}/mo)
                       </span>
                     )}
+                    {!bucket.include_in_daily_avg && (
+                      <span className="text-stone-400">
+                        {" · "}not in daily spending
+                      </span>
+                    )}
                   </p>
                 </div>
 
@@ -414,6 +448,7 @@ function AddBucketDialog({
   const [percentage, setPercentage] = useState(20);
   const [color, setColor] = useState(BUCKET_COLORS[0] ?? "#1A9E9E");
   const [icon, setIcon] = useState("Wallet");
+  const [includeInDailyAvg, setIncludeInDailyAvg] = useState(true);
 
   const slug = name
     .toLowerCase()
@@ -434,6 +469,7 @@ function AddBucketDialog({
           color,
           icon,
           isDefault: false,
+          includeInDailyAvg,
         });
         toast.success("Bucket created");
         router.refresh();
@@ -443,6 +479,7 @@ function AddBucketDialog({
         setPercentage(20);
         setColor(BUCKET_COLORS[0] ?? "#1A9E9E");
         setIcon("Wallet");
+        setIncludeInDailyAvg(true);
       } catch (error) {
         toast.error("Failed to create bucket");
       }
@@ -495,6 +532,13 @@ function AddBucketDialog({
                 </span>
               </div>
             </div>
+
+            {/* Counts toward daily average */}
+            <DailyAvgToggle
+              id="add-bucket-daily-avg"
+              checked={includeInDailyAvg}
+              onCheckedChange={setIncludeInDailyAvg}
+            />
 
             {/* Color */}
             <div>
@@ -569,6 +613,9 @@ function EditBucketDialog({
   const [percentage, setPercentage] = useState(bucket?.percentage ?? 20);
   const [color, setColor] = useState(bucket?.color ?? BUCKET_COLORS[0] ?? "#1A9E9E");
   const [icon, setIcon] = useState(bucket?.icon ?? "Wallet");
+  const [includeInDailyAvg, setIncludeInDailyAvg] = useState(
+    bucket?.include_in_daily_avg ?? false
+  );
 
   if (!bucket) return null;
 
@@ -583,6 +630,7 @@ function EditBucketDialog({
           percentage,
           color,
           icon,
+          includeInDailyAvg,
         });
         toast.success("Bucket updated");
         router.refresh();
@@ -631,6 +679,13 @@ function EditBucketDialog({
                 </span>
               </div>
             </div>
+
+            {/* Counts toward daily average */}
+            <DailyAvgToggle
+              id="edit-bucket-daily-avg"
+              checked={includeInDailyAvg}
+              onCheckedChange={setIncludeInDailyAvg}
+            />
 
             {/* Color */}
             <div>

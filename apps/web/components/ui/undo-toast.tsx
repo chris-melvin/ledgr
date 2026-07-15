@@ -44,3 +44,19 @@ export function showExpenseDeletedToast(
     duration: 10000,
   });
 }
+
+/**
+ * Ledger events are append-only so the running balance stays reconstructible.
+ * Explain that, and offer the adjustment flow as the correction path.
+ */
+export function showLedgerAppendOnlyToast(onReconcile: () => void) {
+  toast("Ledger entries can't be edited", {
+    description:
+      "They're a permanent record of money in and out. To correct your balance, add an adjustment.",
+    duration: 8000,
+    action: {
+      label: "Adjust balance",
+      onClick: onReconcile,
+    },
+  });
+}
