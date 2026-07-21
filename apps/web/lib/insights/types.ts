@@ -107,6 +107,8 @@ export interface BalanceTrendPoint {
   date: string; // yyyy-MM-dd local
   balance: number;
   isToday: boolean;
+  /** True for forward-projected (forecast) points rather than actual history */
+  projected?: boolean;
 }
 
 export interface BucketTotal {
@@ -117,4 +119,21 @@ export interface BucketTotal {
   total: number;
   percentage: number;
   count: number;
+}
+
+// ─── Funding flow (runway-forecast) ─────────────────────────────────────────
+
+export interface FundingFlow {
+  /** Money added in the period (income + savings withdrawals) */
+  added: number;
+  /** Expenses spent in the period */
+  spent: number;
+  /** added − spent */
+  net: number;
+  /** Number of top-up events in the period */
+  topUpCount: number;
+  /** Average size of a top-up */
+  avgTopUp: number;
+  /** Average days between top-ups; null with fewer than 2 top-ups */
+  cadenceDays: number | null;
 }

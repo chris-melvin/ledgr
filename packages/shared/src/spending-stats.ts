@@ -129,3 +129,170 @@ export function daysOfData(
   );
   return diffDays + 1;
 }
+
+// ─── Calendar-aware runway forecast (runway-forecast) ───────────────────────
+//
+// The flat `runwayDays` above answers "at my average burn, how long does the
+// balance last?" but ignores lumpy bills and any money coming in. The forecast
+// below walks the balance forward day by day, applying a smoothed daily burn
+// plus discrete dated events (scheduled bills going out, income/top-ups coming
+// in), so it can report an actual run-out DATE rather than a flat day count.
+
+export type ScheduledRecurrence = "none" | "weekly" | "biweekly" | "monthly";
+
+/**
+ * A recurrence template the forecast expands into concrete dated occurrences.
+ * `amount` is SIGNED: inflows positive, outflows negative.
+ */
+export interface ScheduledEventTemplate {
+  /** UTC TIMESTAMPTZ of the next (or a representative) occurrence */
+  next_at: string;
+  /** Signed: + inflow, − outflow */
+  amount: number;
+  recurrence: ScheduledRecurrence;
+}
+
+/** A single dated money event on the forecast timeline. */
+export interface ForecastEvent {
+  /** Local calendar day, yyyy-MM-dd */
+  date: string;
+  /** Signed: + inflow, − outflow */
+  amount: number;
+}
+
+export interface BalanceForecastPoint {
+  /** Local calendar day, yyyy-MM-dd */
+  date: string;
+  balance: number;
+}
+
+export interface BalanceForecast {
+  /** Day 0 = `fromDay` at `startingBalance`, then one point per horizon day. */
+  projection: BalanceForecastPoint[];
+  /** First day the projected balance goes below zero, or null within horizon. */
+  depletionDate: string | null;
+  /** Whole days the balance lasts (floor-equivalent); null if it never depletes. */
+  runway: number | null;
+}
+
+const GUARD_LIMIT = 800; // ~2 years of weekly steps — a runaway backstop
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+/** Parse a yyyy-MM-dd day key to a UTC-midnight Date (runtime-timezone safe). */
+function dayKeyToUtc(dayKey: string): Date {
+  const [y, m, d] = dayKey.split("-").map(Number);
+  return new Date(Date.UTC(y!, m! - 1, d!));
+}
+
+function utcToDayKey(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+/** Shift a day key by whole calendar days. */
+export function shiftDays(dayKey: string, days: number): string {
+  const d = dayKeyToUtc(dayKey);
+  d.setUTCDate(d.getUTCDate() + days);
+  return utcToDayKey(d);
+}
+
+/**
+ * Shift a day key by whole months, clamping the day to the target month's
+ * length (Jan 31 + 1 month → Feb 28/29) rather than JS's default rollover.
+ */
+export function shiftMonths(dayKey: string, months: number): string {
+  const [y, m, d] = dayKey.split("-").map(Number);
+  const monthIndex = m! - 1 + months;
+  const targetY = y! + Math.floor(monthIndex / 12);
+  const targetM = ((monthIndex % 12) + 12) % 12;
+  const lastDay = new Date(Date.UTC(targetY, targetM + 1, 0)).getUTCDate();
+  const day = Math.min(d!, lastDay);
+  return utcToDayKey(new Date(Date.UTC(targetY, targetM, day)));
+}
+
+/**
+ * Expand recurrence templates into concrete dated events within the window
+ * [fromDay, fromDay + horizonDays]. Recurring templates whose next occurrence
+ * has already lapsed are rolled forward to their first upcoming slot; one-off
+ * templates are emitted only if they land inside the window.
+ */
+export function expandScheduledEvents(
+  templates: ScheduledEventTemplate[],
+  timezone: string,
+  fromDay: string,
+  horizonDays: number
+): ForecastEvent[] {
+  const endDay = shiftDays(fromDay, horizonDays);
+  const out: ForecastEvent[] = [];
+
+  for (const t of templates) {
+    if (!t.amount) continue;
+    let day = localDayKey(t.next_at, timezone);
+
+    if (t.recurrence === "none") {
+      if (day >= fromDay && day <= endDay) out.push({ date: day, amount: t.amount });
+      continue;
+    }
+
+    const stepDays =
+      t.recurrence === "weekly" ? 7 : t.recurrence === "biweekly" ? 14 : 0;
+    const advance = (from: string): string =>
+      stepDays > 0 ? shiftDays(from, stepDays) : shiftMonths(from, 1);
+
+    let guard = 0;
+    while (day < fromDay && guard < GUARD_LIMIT) {
+      day = advance(day);
+      guard++;
+    }
+    guard = 0;
+    while (day <= endDay && guard < GUARD_LIMIT) {
+      out.push({ date: day, amount: t.amount });
+      day = advance(day);
+      guard++;
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Project the running balance forward from `fromDay`, subtracting `dailyBurn`
+ * each day and applying signed `events` on their dates. Reports the projected
+ * daily balances, the first day it goes negative, and a whole-day runway that
+ * matches `runwayDays` in the flat (no-events) case.
+ */
+export function forecastBalance(params: {
+  startingBalance: number;
+  dailyBurn: number;
+  events: ForecastEvent[];
+  horizonDays: number;
+  fromDay: string;
+}): BalanceForecast {
+  const { startingBalance, dailyBurn, events, horizonDays, fromDay } = params;
+
+  const eventsByDay = new Map<string, number>();
+  for (const e of events) {
+    eventsByDay.set(e.date, (eventsByDay.get(e.date) ?? 0) + e.amount);
+  }
+
+  const projection: BalanceForecastPoint[] = [
+    { date: fromDay, balance: round2(startingBalance) },
+  ];
+  let balance = startingBalance;
+  let depletionIndex: number | null = balance < 0 ? 0 : null;
+
+  for (let i = 1; i <= horizonDays; i++) {
+    const day = shiftDays(fromDay, i);
+    balance = balance - dailyBurn + (eventsByDay.get(day) ?? 0);
+    projection.push({ date: day, balance: round2(balance) });
+    if (depletionIndex === null && balance < 0) depletionIndex = i;
+  }
+
+  const depletionDate =
+    depletionIndex === null ? null : projection[depletionIndex]!.date;
+  const runway = depletionIndex === null ? null : Math.max(0, depletionIndex - 1);
+
+  return { projection, depletionDate, runway };
+}

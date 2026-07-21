@@ -26,6 +26,9 @@ export { roadmapVoteRepository } from "./roadmap-vote.repository";
 // Ledger events (running balance)
 export { ledgerEventRepository } from "./ledger-event.repository";
 
+// Scheduled events (runway forecast)
+export { scheduledEventRepository } from "./scheduled-event.repository";
+
 // Savings goals
 export { savingsGoalRepository } from "./savings-goal.repository";
 export { savingsTransactionRepository } from "./savings-transaction.repository";
