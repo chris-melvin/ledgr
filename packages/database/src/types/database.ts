@@ -90,6 +90,16 @@ export type LedgerEventType =
   | "savings_contribution" // (-) money leaving to savings (not spending)
   | "adjustment"; // (±) reconciliation drift correction
 
+/**
+ * Scheduled event direction — supplies the sign; amount is stored positive.
+ */
+export type ScheduledEventDirection = "inflow" | "outflow";
+
+/**
+ * Scheduled event recurrence — how a single row expands into a dated series.
+ */
+export type ScheduledEventRecurrence = "none" | "weekly" | "biweekly" | "monthly";
+
 // =============================================================================
 // CORE TYPES (Updated)
 // =============================================================================
@@ -287,6 +297,41 @@ export type LedgerEventInsert = {
 
 export type LedgerEventUpdate = Partial<
   Omit<LedgerEvent, "id" | "user_id" | "created_at">
+>;
+
+/**
+ * A known upcoming money movement (bill, income, top-up) that the runway
+ * forecast projects the balance against. `amount` is positive; `direction`
+ * gives the sign.
+ */
+export interface ScheduledEvent {
+  id: string;
+  user_id: string;
+  direction: ScheduledEventDirection;
+  amount: number; // positive; direction gives sign
+  label: string;
+  next_at: string; // TIMESTAMPTZ
+  recurrence: ScheduledEventRecurrence;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ScheduledEventInsert = {
+  user_id: string;
+  direction: ScheduledEventDirection;
+  amount: number;
+  label: string;
+  next_at: string;
+  id?: string;
+  recurrence?: ScheduledEventRecurrence;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ScheduledEventUpdate = Partial<
+  Omit<ScheduledEvent, "id" | "user_id" | "created_at">
 >;
 
 export interface SavingsGoal {

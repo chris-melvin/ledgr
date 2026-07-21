@@ -11,6 +11,8 @@ export type {
   SavingsTransactionType,
   TrackingMode,
   LedgerEventType,
+  ScheduledEventDirection,
+  ScheduledEventRecurrence,
 } from "./types/database.js";
 
 // Core entity types
@@ -36,6 +38,7 @@ export type {
   Liability,
   NetWorthSnapshot,
   LedgerEvent,
+  ScheduledEvent,
 } from "./types/database.js";
 
 // Insert types (for creating records)
@@ -57,6 +60,7 @@ export type {
   LiabilityInsert,
   NetWorthSnapshotInsert,
   LedgerEventInsert,
+  ScheduledEventInsert,
 } from "./types/database.js";
 
 // Update types (for updating records)
@@ -76,6 +80,7 @@ export type {
   AssetUpdate,
   LiabilityUpdate,
   LedgerEventUpdate,
+  ScheduledEventUpdate,
 } from "./types/database.js";
 
 // Onboarding types

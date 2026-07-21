@@ -15,6 +15,7 @@ import {
   LedgerActionDialog,
   type LedgerActionMode,
 } from "@/components/dashboard/ledger-action-dialog";
+import { ScheduleDialog } from "@/components/dashboard/schedule-dialog";
 import { FeedbackDialog } from "@/components/feedback/feedback-dialog";
 import { SuccessFlash } from "@/components/ui/success-flash";
 
@@ -30,6 +31,7 @@ import {
   showLedgerAppendOnlyToast,
 } from "@/components/ui/undo-toast";
 import { restoreExpense } from "@/actions/expenses/restore";
+import { createLedgerInflow } from "@/actions/ledger";
 import { formatCurrency } from "@/lib/utils";
 import { DEFAULT_DAILY_LIMIT, CURRENCY } from "@/lib/constants";
 import type {
@@ -90,6 +92,7 @@ export function DashboardClient({
   const [registerOpen, setRegisterOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [ledgerAction, setLedgerAction] = useState<LedgerActionMode | null>(null);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [smartInputTrigger, setSmartInputTrigger] = useState(0);
   const [activeTab, setActiveTab] = useState("today");
 
@@ -225,6 +228,19 @@ export function DashboardClient({
     shortcuts,
     buckets,
   });
+
+  // Top-up from the smart input ("+5000 gcash") → running-balance inflow
+  const handleTopUp = useCallback(
+    async (amount: number, note: string | null) => {
+      const result = await createLedgerInflow({ type: "income", amount, note });
+      if (result.success) {
+        refreshStats();
+        setSuccessMessage(`Topped up ${formatCurrency(amount, CURRENCY)}!`);
+        setShowSuccessFlash(true);
+      }
+    },
+    [refreshStats]
+  );
 
   const handleDeleteExpense = async (id: string) => {
     const expense = expenses.find((e) => e.id === id);
@@ -370,6 +386,8 @@ export function DashboardClient({
                   stats={stats}
                   todayDailyTotal={todayDailyTotal}
                   onStatsChanged={refreshStats}
+                  onTopUp={() => setLedgerAction("income")}
+                  onPlanUpcoming={() => setScheduleOpen(true)}
                 />
               )}
 
@@ -536,6 +554,7 @@ export function DashboardClient({
                 ledgerEvents={initialLedgerEvents}
                 buckets={buckets}
                 currentBalance={stats?.balance ?? null}
+                forecastPoints={stats?.forecastPoints ?? []}
               />
             </Suspense>
           </TabsContent>
@@ -555,6 +574,7 @@ export function DashboardClient({
         buckets={buckets}
         defaultBucketSlug={defaultBucket?.slug}
         openTrigger={smartInputTrigger}
+        onTopUp={isBudgetMode ? undefined : handleTopUp}
       />
 
       {/* Success Animation */}
@@ -573,6 +593,7 @@ export function DashboardClient({
         onAddExpenses={() => setSmartInputTrigger((n) => n + 1)}
         onRegisterMode={() => setRegisterOpen(true)}
         onLedgerAction={setLedgerAction}
+        onPlanUpcoming={() => setScheduleOpen(true)}
         onNavigateTab={setActiveTab}
         showLedgerActions={!isBudgetMode}
       />
@@ -586,6 +607,14 @@ export function DashboardClient({
           setSuccessMessage(message);
           setShowSuccessFlash(true);
         }}
+      />
+
+      {/* Plan upcoming (scheduled events → runway forecast) */}
+      <ScheduleDialog
+        open={scheduleOpen}
+        onClose={() => setScheduleOpen(false)}
+        onChanged={refreshStats}
+        timezone={timezone}
       />
 
       {/* Register Mode */}

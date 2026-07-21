@@ -22,6 +22,7 @@ import {
   computeCategoryTrends,
   computeBalanceTrend,
   computeBucketBreakdown,
+  computeFundingFlow,
 } from "@/lib/insights/calculations";
 import { SpendingTrendChart } from "./spending-trend-chart";
 import { CategoryBreakdown } from "./category-breakdown";
@@ -37,6 +38,7 @@ import { TopSpendingDays } from "./top-spending-days";
 import { CategoryTrends } from "./category-trends";
 import { BalanceTrendChart } from "./balance-trend-chart";
 import { BucketBreakdown } from "./bucket-breakdown";
+import { FundingFlowCard } from "./funding-flow-card";
 import type { BudgetBucket, Expense, LedgerEvent } from "@repo/database";
 import type { InsightsPeriod } from "@/lib/insights/types";
 
@@ -48,6 +50,8 @@ interface InsightsTabProps {
   ledgerEvents?: LedgerEvent[];
   buckets?: BudgetBucket[];
   currentBalance?: number | null;
+  // Forward balance projection (runway-forecast)
+  forecastPoints?: { date: string; balance: number }[];
 }
 
 export function InsightsTab({
@@ -57,6 +61,7 @@ export function InsightsTab({
   ledgerEvents = [],
   buckets = [],
   currentBalance = null,
+  forecastPoints = [],
 }: InsightsTabProps) {
   const { timezone } = useTimezone();
   const [period, setPeriod] = useState<InsightsPeriod>("month");
@@ -168,7 +173,7 @@ export function InsightsTab({
 
   const balanceTrend = useMemo(() => {
     if (isBudgetMode || currentBalance === null) return [];
-    return computeBalanceTrend(
+    const history = computeBalanceTrend(
       currentBalance,
       ledgerEvents,
       expenses,
@@ -176,7 +181,29 @@ export function InsightsTab({
       days,
       openingEvent?.occurred_at ?? null
     );
-  }, [isBudgetMode, currentBalance, ledgerEvents, expenses, timezone, days, openingEvent]);
+    if (history.length === 0 || forecastPoints.length === 0) return history;
+    const projected = forecastPoints.map((p) => ({
+      date: p.date,
+      balance: p.balance,
+      isToday: false,
+      projected: true,
+    }));
+    return [...history, ...projected];
+  }, [
+    isBudgetMode,
+    currentBalance,
+    ledgerEvents,
+    expenses,
+    timezone,
+    days,
+    openingEvent,
+    forecastPoints,
+  ]);
+
+  const fundingFlow = useMemo(
+    () => computeFundingFlow(ledgerEvents, expenses, timezone, days),
+    [ledgerEvents, expenses, timezone, days]
+  );
 
   const bucketBreakdown = useMemo(() => {
     if (isBudgetMode || buckets.length === 0) return [];
@@ -232,6 +259,11 @@ export function InsightsTab({
 
       {/* 2. Balance Trend (tracking mode) */}
       <BalanceTrendChart data={balanceTrend} />
+
+      {/* 2a. Funding flow — money in vs out (tracking mode) */}
+      {!isBudgetMode && (
+        <FundingFlowCard data={fundingFlow} periodLabel={totals.periodLabel} />
+      )}
 
       {/* 2b. Tracking Completeness Score (NEW) */}
       <TrackingCompletenessCard data={trackingCompleteness} />

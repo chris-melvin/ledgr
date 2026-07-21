@@ -10,6 +10,7 @@ import {
   ArrowDownToLine,
   Scale,
   CalendarDays,
+  CalendarClock,
   BarChart3,
 } from "lucide-react";
 import type { LedgerActionMode } from "./ledger-action-dialog";
@@ -20,6 +21,7 @@ interface CommandPaletteProps {
   onAddExpenses: () => void;
   onRegisterMode: () => void;
   onLedgerAction: (mode: LedgerActionMode) => void;
+  onPlanUpcoming: () => void;
   onNavigateTab: (tab: "today" | "insights") => void;
   /** Ledger actions only make sense in tracking mode */
   showLedgerActions: boolean;
@@ -35,6 +37,7 @@ export function CommandPalette({
   onAddExpenses,
   onRegisterMode,
   onLedgerAction,
+  onPlanUpcoming,
   onNavigateTab,
   showLedgerActions,
 }: CommandPaletteProps) {
@@ -147,6 +150,10 @@ export function CommandPalette({
                 >
                   <Scale className="w-4 h-4 text-amber-500" />
                   Reconcile balance
+                </Command.Item>
+                <Command.Item className={itemClass} onSelect={() => run(onPlanUpcoming)}>
+                  <CalendarClock className="w-4 h-4 text-blue-500" />
+                  Plan upcoming
                 </Command.Item>
               </>
             )}

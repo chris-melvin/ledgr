@@ -20,6 +20,31 @@ interface BucketOption {
   color?: string | null;
 }
 
+/**
+ * Detect a top-up (money-in) intent so the FAB can add to the running balance
+ * instead of logging an expense. Triggers on a leading "+" or "top up":
+ *   "+5000", "+5000 gcash", "top up 3000 salary"
+ * Returns the amount and an optional note, or null when it's not a top-up.
+ */
+export function parseTopUp(
+  input: string
+): { amount: number; note: string | null } | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  const plus = trimmed.match(/^\+\s*[₱$]?\s*(\d+(?:\.\d+)?)\s*(.*)$/);
+  const keyword = trimmed.match(
+    /^top[\s-]?up\s+[₱$]?\s*(\d+(?:\.\d+)?)\s*(.*)$/i
+  );
+  const m = plus ?? keyword;
+  if (!m) return null;
+
+  const amount = parseFloat(m[1]!);
+  if (Number.isNaN(amount) || amount <= 0) return null;
+  const note = (m[2] ?? "").trim() || null;
+  return { amount, note };
+}
+
 interface SmartInputBarProps {
   onAddExpenses: (expenses: ExpensePreview[]) => void;
   preview: ExpensePreview[];
@@ -36,6 +61,8 @@ interface SmartInputBarProps {
   defaultBucketSlug?: string;
   /** Increment to open the input from outside (e.g., command palette) */
   openTrigger?: number;
+  /** Route a top-up ("+5000") to the running balance (tracking mode only) */
+  onTopUp?: (amount: number, note: string | null) => void | Promise<void>;
 }
 
 /** Staged preview: one row per parsed item with editable bucket chip */
@@ -126,7 +153,7 @@ const SYNTAX_EXAMPLES = [
   { example: "coffee 120", desc: "Simple expense" },
   { example: "grab 180 and lunch", desc: "Multiple items" },
   { example: "coffee 120 at 2pm", desc: "With time" },
-  { example: "uber 180 #travel", desc: "Add category" },
+  { example: "+5000 gcash", desc: "Top up balance" },
 ];
 
 export function SmartInputBar({
@@ -140,8 +167,12 @@ export function SmartInputBar({
   buckets = [],
   defaultBucketSlug,
   openTrigger = 0,
+  onTopUp,
 }: SmartInputBarProps) {
   const [value, setValue] = useState("");
+  const [topUp, setTopUp] = useState<{ amount: number; note: string | null } | null>(
+    null
+  );
   const [isFocused, setIsFocused] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -216,18 +247,32 @@ export function SmartInputBar({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value;
       setValue(newValue);
-      onInputChange(newValue);
+      // A top-up ("+5000") goes to the balance, not the expense parser — so
+      // suppress the expense preview while the input reads as a top-up.
+      const tu = onTopUp ? parseTopUp(newValue) : null;
+      setTopUp(tu);
+      onInputChange(tu ? "" : newValue);
     },
-    [onInputChange]
+    [onInputChange, onTopUp]
   );
 
   const handleSubmit = useCallback(() => {
     if (!value.trim() || isParsing) return;
     const input = value;
+    const tu = onTopUp ? parseTopUp(input) : null;
     // Close UI immediately (optimistic)
     setValue("");
+    setTopUp(null);
     setIsExpanded(false);
     setIsDesktopModalOpen(false);
+
+    if (tu && onTopUp) {
+      Promise.resolve(onTopUp(tu.amount, tu.note)).catch((err) => {
+        console.error("[SmartInputBar] Top-up failed:", err);
+      });
+      return;
+    }
+
     // Staged preview (with any bucket edits/removals) is the source of
     // truth when present; otherwise re-parse the raw input (AI fallback).
     const submission =
@@ -236,7 +281,7 @@ export function SmartInputBar({
     Promise.resolve(submission).catch((err) => {
       console.error("[SmartInputBar] Submit failed:", err);
     });
-  }, [value, isParsing, onSubmit, onSubmitPreview, preview.length]);
+  }, [value, isParsing, onSubmit, onSubmitPreview, onTopUp, preview.length]);
 
   // Cycle a preview row's bucket through the available buckets
   const cycleBucket = useCallback(
@@ -265,6 +310,7 @@ export function SmartInputBar({
       }
       if (e.key === "Escape") {
         setValue("");
+        setTopUp(null);
         onInputChange("");
         mobileInputRef.current?.blur();
         desktopInputRef.current?.blur();
@@ -277,6 +323,7 @@ export function SmartInputBar({
 
   const clearInput = useCallback(() => {
     setValue("");
+    setTopUp(null);
     onInputChange("");
     mobileInputRef.current?.focus();
     desktopInputRef.current?.focus();
@@ -356,7 +403,15 @@ export function SmartInputBar({
                       placeholder="coffee 120, grab and lunch..."
                       className="flex-1 min-w-0 bg-transparent text-neutral-800 text-base outline-none placeholder:text-neutral-400"
                     />
-                    {preview.length > 0 && preview[0] && (
+                    {topUp ? (
+                      <div className="flex items-center gap-1 flex-shrink-0 animate-in fade-in duration-150">
+                        <span className="text-xs font-semibold text-emerald-600">
+                          +{CURRENCY}
+                          {topUp.amount.toLocaleString()}
+                        </span>
+                        <span className="text-[10px] text-neutral-400">top up</span>
+                      </div>
+                    ) : preview.length > 0 && preview[0] ? (
                       <div className="flex items-center gap-1 flex-shrink-0 animate-in fade-in duration-150">
                         <span className="text-xs font-medium text-teal-600">
                           {CURRENCY}
@@ -368,7 +423,7 @@ export function SmartInputBar({
                           </span>
                         )}
                       </div>
-                    )}
+                    ) : null}
                     {value && (
                       <button onClick={clearInput} className="p-1 text-neutral-400 flex-shrink-0">
                         <X className="w-5 h-5" />
@@ -440,7 +495,15 @@ export function SmartInputBar({
                       placeholder="coffee 120, grab and lunch, @starbucks..."
                       className="flex-1 min-w-0 bg-transparent text-neutral-800 text-base outline-none placeholder:text-neutral-400"
                     />
-                    {preview.length > 0 && preview[0] && (
+                    {topUp ? (
+                      <div className="flex items-center gap-1.5 flex-shrink-0 animate-in fade-in duration-150">
+                        <span className="text-sm font-semibold text-emerald-600">
+                          +{CURRENCY}
+                          {topUp.amount.toLocaleString()}
+                        </span>
+                        <span className="text-xs text-neutral-400">top up</span>
+                      </div>
+                    ) : preview.length > 0 && preview[0] ? (
                       <div className="flex items-center gap-1.5 flex-shrink-0 animate-in fade-in duration-150">
                         <span className="text-sm font-medium text-teal-600">
                           {CURRENCY}
@@ -452,7 +515,7 @@ export function SmartInputBar({
                           </span>
                         )}
                       </div>
-                    )}
+                    ) : null}
                     {value && (
                       <button
                         onClick={clearInput}

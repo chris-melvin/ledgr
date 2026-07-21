@@ -382,3 +382,59 @@ export function computeBucketBreakdown(
     .filter((b) => b.count > 0)
     .sort((a, b) => b.total - a.total);
 }
+
+/**
+ * Funding flow: money added (top-ups) vs spent over the period, net flow, and
+ * top-up cadence (runway-forecast). "Added" counts income + savings
+ * withdrawals — inflows the user actively made — not the opening-balance
+ * snapshot or reconciliation adjustments.
+ */
+export function computeFundingFlow(
+  ledgerEvents: Array<{ type: string; amount: number; occurred_at: string }>,
+  expenses: Array<{ amount: number; occurred_at: string }>,
+  timezone: string,
+  days: number
+): import("./types").FundingFlow {
+  const endTimestamp = dateUtils.getCurrentTimestamp(timezone, true);
+  const startTimestamp = dateUtils.subtractDaysFromTimestamp(
+    endTimestamp,
+    days - 1,
+    timezone
+  );
+  const startDay = dateUtils.formatInTimezone(
+    new Date(startTimestamp),
+    timezone,
+    "yyyy-MM-dd"
+  );
+  const todayKey = dateUtils.formatInTimezone(new Date(), timezone, "yyyy-MM-dd");
+
+  const inWindow = (ts: string): boolean => {
+    const key = dateUtils.formatInTimezone(new Date(ts), timezone, "yyyy-MM-dd");
+    return key >= startDay && key <= todayKey;
+  };
+
+  const topUpTypes = new Set(["income", "savings_withdrawal"]);
+  const topUps = ledgerEvents
+    .filter(
+      (e) => topUpTypes.has(e.type) && e.amount > 0 && inWindow(e.occurred_at)
+    )
+    .sort((a, b) => (a.occurred_at < b.occurred_at ? -1 : 1));
+
+  const added = topUps.reduce((sum, e) => sum + e.amount, 0);
+  const spent = expenses
+    .filter((e) => inWindow(e.occurred_at))
+    .reduce((sum, e) => sum + e.amount, 0);
+
+  const topUpCount = topUps.length;
+  const avgTopUp = topUpCount > 0 ? added / topUpCount : 0;
+
+  let cadenceDays: number | null = null;
+  if (topUpCount >= 2) {
+    const firstMs = new Date(topUps[0]!.occurred_at).getTime();
+    const lastMs = new Date(topUps[topUpCount - 1]!.occurred_at).getTime();
+    const spanDays = (lastMs - firstMs) / (24 * 60 * 60 * 1000);
+    cadenceDays = Math.max(1, Math.round(spanDays / (topUpCount - 1)));
+  }
+
+  return { added, spent, net: added - spent, topUpCount, avgTopUp, cadenceDays };
+}
